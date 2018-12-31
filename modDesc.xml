@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<modDesc descVersion="40">
+	<author>ZhooL</author>
+  <version>1.3.0.0</version>
+  <title>
+    <de>EnhancedVehicle</de>
+    <en>EnhancedVehicle</en>
+  </title>
+  <description>
+    <de><![CDATA[Differentialsperren und Antriebsmodi für dein Fahrzeug. Mehr Fahrzeugsdetails im HUD.]]></de>
+    <en><![CDATA[Differential locks and wheel drive modes for your vehicle. Shows more vehicle details on HUD.]]></en>
+  </description>
+  <iconFilename>TSX_EnhancedVehicle.dds</iconFilename>
+  <multiplayer supported="true"/>
+  <extraSourceFiles>	
+    <sourceFile filename="TSX_EnhancedVehicle_Register.lua" /> 
+  </extraSourceFiles>
+</modDesc>
