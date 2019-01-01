@@ -63,15 +63,15 @@ end
 function TSX_EnhancedVehicle_Register:keyEvent(unicode, sym, modifier, isDown)
   if Input.isKeyPressed(Input.KEY_KP_7) then
     TSX_EnhancedVehicle.keyPressed.diff_front = true
---    if debug then print("KEY_KP_7 pressed") end
+    if debug > 0 then print("KEY_KP_7 pressed") end
   end
   if Input.isKeyPressed(Input.KEY_KP_8) then
     TSX_EnhancedVehicle.keyPressed.diff_back = true
---    if debug then print("KEY_KP_8 pressed") end
+    if debug > 0 then print("KEY_KP_8 pressed") end
   end
   if Input.isKeyPressed(Input.KEY_KP_9) then
     TSX_EnhancedVehicle.keyPressed.wd_mode = true
---    if debug then print("KEY_KP_9 pressed") end
+    if debug > 0 then print("KEY_KP_9 pressed") end
   end
 end
 

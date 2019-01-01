@@ -4,7 +4,19 @@
 -- Author: ZhooL
 -- email: ls19@dark-world.de
 -- @Date: 01.01.2019
--- @Version: 1.3.1.0 
+-- @Version: 1.3.1.1 
+
+-- CHANGELOG
+--
+-- 2019-01-01 - V1.3.1.1
+-- * bugfix for dedicated servers
+-- * bugfix for clients not reacting on key press (stupid GIANT engine again)
+--
+-- 2019-01-01 - V1.3.1.0
+-- + added background overlay to make colored text better readable
+-- 
+-- 2018-12-31 - V1.3.0.0
+-- * first release
 
 debug = 0 -- 0=0ff, 1=some, 2=everything, 3=madness
 local myName = "TSX_EnhancedVehicle"
@@ -93,13 +105,6 @@ end
 function TSX_EnhancedVehicle:onPostLoad(savegame)
   if debug > 1 then print("-> " .. myName .. ": onPostLoad" .. mySelf(self)) end
 
-end
-
--- #############################################################################
-
-function TSX_EnhancedVehicle:onUpdate(dt)
-  if debug > 2 then print("-> " .. myName .. ": onUpdate " .. dt .. ", S: " .. bool_to_number(self.isServer) .. ", C: " .. bool_to_number(self.isClient) .. mySelf(self)) end
-
   -- (server) set defaults when vehicle is "new"
   if self.isServer then
     if self.vData == nil then
@@ -122,9 +127,16 @@ function TSX_EnhancedVehicle:onUpdate(dt)
           self.vData.maxSpeedRatio[3] = differential.maxSpeedRatio
         end
       end
-      if debug > 0 then print("setup of differentials done" .. mySelf(self)) end            
+      if debug > 0 then print("--> setup of differentials done" .. mySelf(self)) end            
     end
   end
+
+end
+
+-- #############################################################################
+
+function TSX_EnhancedVehicle:onUpdate(dt)
+  if debug > 2 then print("-> " .. myName .. ": onUpdate " .. dt .. ", S: " .. bool_to_number(self.isServer) .. ", C: " .. bool_to_number(self.isClient) .. mySelf(self)) end
 
   -- (server) process changes between "is" and "want"    
   if self.isServer and self.vData ~= nil then
@@ -166,8 +178,10 @@ function TSX_EnhancedVehicle:onUpdate(dt)
     end
   end
 
-  -- handle key press event on client site only wenn inside a human controlled vehicle 
-  if not self:getIsAIActive() and self:getIsActive() and self.isClient and self.getIsControlled and g_gameSettings.nickname == self:getControllerName() then
+  -- handle key press event on client site only wenn inside a human controlled vehicle
+  -- g_gameSettings.nickname == self:getControllerName()
+  -- not self:getIsAIActive()
+  if self.isClient and self:getIsActive() and self:getIsControlled() then
     -- front diff
     if TSX_EnhancedVehicle.keyPressed.diff_front then
       self.vData.want[1] = not self.vData.want[1]
@@ -482,9 +496,16 @@ function TSX_EnhancedVehicle:onWriteStream(streamId, connection)
   if debug > 1 then print("-> " .. myName .. ": onWriteStream - " .. streamId .. mySelf(self)) end
 
   -- send initial data to client
-  streamWriteBool(streamId,  self.vData.is[1])
-  streamWriteBool(streamId,  self.vData.is[2])
-  streamWriteInt32(streamId, self.vData.is[3])
+  if g_dedicatedServerInfo ~= nil then
+    -- when dedicated server then send want array to client cause onUpdate never ran and thus vData "is" is "wrong"
+    streamWriteBool(streamId,  self.vData.want[1])
+    streamWriteBool(streamId,  self.vData.want[2])
+    streamWriteInt32(streamId, self.vData.want[3])
+  else
+    streamWriteBool(streamId,  self.vData.is[1])
+    streamWriteBool(streamId,  self.vData.is[2])
+    streamWriteInt32(streamId, self.vData.is[3])
+  end
 end
 
 -- #############################################################################
