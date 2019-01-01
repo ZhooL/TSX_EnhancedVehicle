@@ -3,8 +3,8 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 31.12.2018
--- @Version: 1.3.0.0 
+-- @Date: 01.01.2019
+-- @Version: 1.3.1.0 
 
 local myName = "TSX_EnhancedVehicle_Event"
 

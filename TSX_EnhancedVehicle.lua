@@ -3,8 +3,8 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 31.12.2018
--- @Version: 1.3.0.0 
+-- @Date: 01.01.2019
+-- @Version: 1.3.1.0 
 
 debug = 0 -- 0=0ff, 1=some, 2=everything, 3=madness
 local myName = "TSX_EnhancedVehicle"
@@ -15,8 +15,24 @@ TSX_EnhancedVehicle = {}
 TSX_EnhancedVehicle.modDirectory = g_currentModDirectory;
 
 -- some global stuff
-TSX_EnhancedVehicle.fontSize    = 0.01 
-TSX_EnhancedVehicle.textPadding = 0.001
+TSX_EnhancedVehicle.fontSize      = 0.01 
+TSX_EnhancedVehicle.textPadding   = 0.001
+TSX_EnhancedVehicle.overlayBorder = 0.003
+
+-- some colors
+TSX_EnhancedVehicle.color = {
+  white  = {       1,       1,       1, 1 },
+  red    = { 255/255,   0/255,   0/255, 1 },
+  green  = {   0/255, 255/255,   0/255, 1 },
+  blue   = {   0/255,   0/255, 255/255, 1 },
+  yellow = { 255/255, 255/255,   0/255, 1 },
+  dmg    = {  86/255, 142/255,  42/255, 1 },
+  fuel   = { 124/255,  90/255,   8/255, 1 },
+  adblue = {  48/255,  78/255, 249/255, 1 },
+}
+
+-- for overlays
+TSX_EnhancedVehicle.overlay = {}
 
 -- for HUD damage enhancement
 TSX_EnhancedVehicle.dmg = {}
@@ -200,12 +216,30 @@ function TSX_EnhancedVehicle:onDraw()
   -- only on client side and GUI is visible
   if self.isClient and not g_gui:getIsGuiVisible() then
 
+    -- prepare overlays
+    if TSX_EnhancedVehicle.overlay["fuel"] == nil then
+      TSX_EnhancedVehicle.overlay["fuel"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "overlay_bg.png")
+      setOverlayColor(TSX_EnhancedVehicle.overlay["fuel"], 0, 0, 0, 0.75)
+    end
+    if TSX_EnhancedVehicle.overlay["dmg"] == nil then
+      TSX_EnhancedVehicle.overlay["dmg"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "overlay_bg.png")
+      setOverlayColor(TSX_EnhancedVehicle.overlay["dmg"], 0, 0, 0, 0.75)
+    end
+    if TSX_EnhancedVehicle.overlay["diff"] == nil then
+      TSX_EnhancedVehicle.overlay["diff"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "overlay_bg.png")
+      setOverlayColor(TSX_EnhancedVehicle.overlay["diff"], 0, 0, 0, 0.75)
+    end
+    if TSX_EnhancedVehicle.overlay["misc"] == nil then
+      TSX_EnhancedVehicle.overlay["misc"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "overlay_bg.png")
+      setOverlayColor(TSX_EnhancedVehicle.overlay["misc"], 0, 0, 0, 0.75)
+    end
+    
     -- ### do the fuel stuff ###
     if self.spec_fillUnit ~= nil then
       -- get coordinates
       if g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement ~= nil then
         TSX_EnhancedVehicle.fuel.posX = g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement.overlay.x
-        TSX_EnhancedVehicle.fuel.posY = g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement.overlay.y + g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement.overlay.height
+        TSX_EnhancedVehicle.fuel.posY = g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement.overlay.y + g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement.overlay.height + 0.005
       end
       
       -- get values
@@ -223,31 +257,47 @@ function TSX_EnhancedVehicle:onDraw()
       end
       
       -- prepare text
+      h = 0
       fuel_txt_usage = ""
       fuel_txt_diesel = ""
       fuel_txt_adblue = ""
       if fuel_diesel_current >= 0 then
         fuel_txt_diesel = string.format("%.1f l/%.1f l", fuel_diesel_current, fuel_diesel_max)
+        h = h + TSX_EnhancedVehicle.fontSize + TSX_EnhancedVehicle.textPadding 
       end
       if fuel_adblue_current >= 0 then
         fuel_txt_adblue = string.format("%.1f l/%.1f l", fuel_adblue_current, fuel_adblue_max)
+        h = h + TSX_EnhancedVehicle.fontSize + TSX_EnhancedVehicle.textPadding 
       end
       if self.spec_motorized.isMotorStarted == true then
         fuel_txt_usage = string.format("%.2f l/h", self.spec_motorized.lastFuelUsage)
+        h = h + TSX_EnhancedVehicle.fontSize + TSX_EnhancedVehicle.textPadding 
       end 
 
+      -- render overlay
+      w = getTextWidth(TSX_EnhancedVehicle.fontSize, fuel_txt_diesel)
+      tmp = getTextWidth(TSX_EnhancedVehicle.fontSize, fuel_txt_adblue) 
+      if  tmp > w then
+        w = tmp
+      end
+      tmp = getTextWidth(TSX_EnhancedVehicle.fontSize, fuel_txt_usage) 
+      if  tmp > w then
+        w = tmp
+      end
+      renderOverlay(TSX_EnhancedVehicle.overlay["fuel"], TSX_EnhancedVehicle.fuel.posX - TSX_EnhancedVehicle.overlayBorder, TSX_EnhancedVehicle.fuel.posY - TSX_EnhancedVehicle.overlayBorder, w + (TSX_EnhancedVehicle.overlayBorder*2), h + (TSX_EnhancedVehicle.overlayBorder*2))
+       
       -- render text      
       tmpY = TSX_EnhancedVehicle.fuel.posY 
       setTextAlignment(RenderText.ALIGN_LEFT);    
       setTextVerticalAlignment(RenderText.VERTICAL_ALIGN_BOTTOM)
       setTextBold(false);
       if fuel_txt_diesel ~= "" then
-        setTextColor(unpack(getColor("fuel")))        
+        setTextColor(unpack(TSX_EnhancedVehicle.color.fuel))        
         renderText(TSX_EnhancedVehicle.fuel.posX, tmpY, TSX_EnhancedVehicle.fontSize, fuel_txt_diesel)
         tmpY = tmpY + (TSX_EnhancedVehicle.fontSize + TSX_EnhancedVehicle.textPadding) * 1
       end
       if fuel_txt_adblue ~= "" then
-        setTextColor(unpack(getColor("blue")))        
+        setTextColor(unpack(TSX_EnhancedVehicle.color.adblue))        
         renderText(TSX_EnhancedVehicle.fuel.posX, tmpY, TSX_EnhancedVehicle.fontSize, fuel_txt_adblue)
         tmpY = tmpY + (TSX_EnhancedVehicle.fontSize + TSX_EnhancedVehicle.textPadding) * 1
       end
@@ -263,13 +313,15 @@ function TSX_EnhancedVehicle:onDraw()
       -- get coordinates
       if g_currentMission.inGameMenu.hud.speedMeter.damageGaugeIconElement ~= nil then
         TSX_EnhancedVehicle.dmg.posX = g_currentMission.inGameMenu.hud.speedMeter.damageGaugeIconElement.overlay.x + g_currentMission.inGameMenu.hud.speedMeter.damageGaugeIconElement.overlay.width
-        TSX_EnhancedVehicle.dmg.posY = g_currentMission.inGameMenu.hud.speedMeter.damageGaugeIconElement.overlay.y + g_currentMission.inGameMenu.hud.speedMeter.damageGaugeIconElement.overlay.height
+        TSX_EnhancedVehicle.dmg.posY = g_currentMission.inGameMenu.hud.speedMeter.damageGaugeIconElement.overlay.y + g_currentMission.inGameMenu.hud.speedMeter.damageGaugeIconElement.overlay.height + 0.005
       end
 
       -- prepare text
+      h = 0
       dmg_txt = ""
       if self.spec_wearable.totalAmount ~= nil then
-        dmg_txt = string.format("(%s) %.1f", self.typeDesc, (self.spec_wearable.totalAmount * 100)) .. "%"
+        dmg_txt = string.format("%s: %.1f", self.typeDesc, (self.spec_wearable.totalAmount * 100)) .. "%"
+        h = h + TSX_EnhancedVehicle.fontSize + TSX_EnhancedVehicle.textPadding 
       end
 
       dmg_txt2 = ""
@@ -277,11 +329,19 @@ function TSX_EnhancedVehicle:onDraw()
         getDmg(self.spec_attacherJoints)
       end
 
+      -- render overlay
+      w = getTextWidth(TSX_EnhancedVehicle.fontSize, dmg_txt)
+      tmp = getTextWidth(TSX_EnhancedVehicle.fontSize, dmg_txt2) + 0.005
+      if tmp > w then
+        w = tmp
+      end
+      renderOverlay(TSX_EnhancedVehicle.overlay["dmg"], TSX_EnhancedVehicle.dmg.posX - TSX_EnhancedVehicle.overlayBorder - w, TSX_EnhancedVehicle.dmg.posY - TSX_EnhancedVehicle.overlayBorder, w + (TSX_EnhancedVehicle.overlayBorder * 2), h + (TSX_EnhancedVehicle.overlayBorder * 2))
+
       -- render text      
       setTextColor(1,1,1,1);
       setTextAlignment(RenderText.ALIGN_RIGHT);    
       setTextVerticalAlignment(RenderText.VERTICAL_ALIGN_BOTTOM)
-      setTextColor(unpack(getColor("dmg")))        
+      setTextColor(unpack(TSX_EnhancedVehicle.color.dmg))        
       setTextBold(false);
       renderText(TSX_EnhancedVehicle.dmg.posX, TSX_EnhancedVehicle.dmg.posY, TSX_EnhancedVehicle.fontSize, dmg_txt)
       setTextColor(1,1,1,1);
@@ -307,6 +367,11 @@ function TSX_EnhancedVehicle:onDraw()
       end 
       misc_txt = string.format("%i rpm / %.2f °C\n%s", lmr, lmt, mass_txt) 
 
+      -- render overlay
+      w = getTextWidth(TSX_EnhancedVehicle.fontSize, misc_txt)
+      h = getTextHeight(TSX_EnhancedVehicle.fontSize, misc_txt) 
+      renderOverlay(TSX_EnhancedVehicle.overlay["misc"], TSX_EnhancedVehicle.misc.posX - TSX_EnhancedVehicle.overlayBorder - (w/2), TSX_EnhancedVehicle.misc.posY - TSX_EnhancedVehicle.overlayBorder - h, w + (TSX_EnhancedVehicle.overlayBorder * 2), h + (TSX_EnhancedVehicle.overlayBorder * 2))
+
       -- render text      
       setTextColor(1,1,1,1);
       setTextAlignment(RenderText.ALIGN_CENTER);    
@@ -320,7 +385,7 @@ function TSX_EnhancedVehicle:onDraw()
       -- get coordinates
       if g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement ~= nil then
         TSX_EnhancedVehicle.diff.posX = g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement.overlay.x + g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement.overlay.width
-        TSX_EnhancedVehicle.diff.posY = g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement.overlay.y + g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement.overlay.height + ((TSX_EnhancedVehicle.fontSize + TSX_EnhancedVehicle.textPadding) * 4)
+        TSX_EnhancedVehicle.diff.posY = g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement.overlay.y + g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement.overlay.height + ((TSX_EnhancedVehicle.fontSize + TSX_EnhancedVehicle.textPadding) * 4) + 0.005
       end
 
       -- prepare text
@@ -356,6 +421,11 @@ function TSX_EnhancedVehicle:onDraw()
         end
       end
 
+      -- render overlay
+      w = getTextWidth(TSX_EnhancedVehicle.fontSize, "VL-           -VR")
+      h = getTextHeight(TSX_EnhancedVehicle.fontSize, "X\nX\nX\nX\nX") 
+      renderOverlay(TSX_EnhancedVehicle.overlay["diff"], TSX_EnhancedVehicle.diff.posX - TSX_EnhancedVehicle.overlayBorder - (w/2), TSX_EnhancedVehicle.diff.posY - TSX_EnhancedVehicle.overlayBorder, w + (TSX_EnhancedVehicle.overlayBorder * 2), h + (TSX_EnhancedVehicle.overlayBorder * 2))
+
       -- render text      
       setTextColor(1,1,1,1);
       setTextAlignment(RenderText.ALIGN_CENTER);    
@@ -365,7 +435,7 @@ function TSX_EnhancedVehicle:onDraw()
       tmpY = TSX_EnhancedVehicle.diff.posY 
       for j=3, 1, -1 do
         setTextBold(_txt.bold[j])        
-        setTextColor(unpack(getColor(_txt.color[j])))        
+        setTextColor(unpack(TSX_EnhancedVehicle.color[_txt.color[j]]))        
         renderText(TSX_EnhancedVehicle.diff.posX, tmpY, TSX_EnhancedVehicle.fontSize, _txt.txt[j])
         tmpY = tmpY + (TSX_EnhancedVehicle.fontSize + TSX_EnhancedVehicle.textPadding) * 2
       end
@@ -430,35 +500,11 @@ function bool_to_number(value)
   return value and 1 or 0
 end
 
-function getColor(color)
-  if color == "red" then
-    return({ 255/255, 0/255, 0/255, 1 })
-  end
-  if color == "green" then
-    return({ 0/255, 255/255, 0/255, 1 })
-  end
-  if color == "blue" then
-    return({ 0/255, 0/255, 255/255, 1 })
-  end
-  if color == "yellow" then
-    return({ 255/255, 255/255, 0/255, 1 })
-  end
-  if color == "dmg" then
-    return({ 86/255, 142/255, 42/255, 1 })
-  end
-  if color == "fuel" then
-    return({ 124/255, 90/255, 8/255, 1 })
-  end
-  if color == "adblue" then
-    return({ 48/255, 78/255, 149/255, 1 })
-  end
-  return({ 1, 1, 1, 1 })
-end
-
 function getDmg(start)
   if start.spec_attacherJoints.attachedImplements ~= nil then      
     for _, implement in pairs(start.spec_attacherJoints.attachedImplements) do
-      dmg_txt2 = string.format("(%s) %.1f", implement.object.typeDesc, (implement.object.spec_wearable.totalAmount * 100)) .. "%\n" .. dmg_txt2
+      dmg_txt2 = string.format("%s: %.1f", implement.object.typeDesc, (implement.object.spec_wearable.totalAmount * 100)) .. "%\n" .. dmg_txt2
+      h = h + TSX_EnhancedVehicle.fontSize + TSX_EnhancedVehicle.textPadding 
       if implement.object.spec_attacherJoints ~= nil then
         getDmg(implement.object)
       end

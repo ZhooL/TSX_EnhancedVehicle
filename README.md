@@ -1,7 +1,7 @@
 # TSX_EnhancedVehicle
 This is a Mod for Farming Simulator 19. It adds differential locks and wheel drive modes to your vehicle. It shows more vehicle details on the HUD also.<br>
 <br>
-*(c) 2018 by ZhooL. Be so kind to credit me when using this mod or the source code (or parts of it) somewhere.*
+*(c) 2018-2019 by ZhooL. Be so kind to credit me when using this mod or the source code (or parts of it) somewhere.*
 
 ## default key bindings
 * KeyPad 7 - enable/disable front axle differential lock
