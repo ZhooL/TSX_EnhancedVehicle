@@ -14,8 +14,10 @@
 -- + position of HUD elements can be moved or enabled/disabled in XML file
 -- * rewrote the key binding/key press stuff
 -- + key bindings can now be changed in the options menu
--- + added config reset functionality and keybinding
+-- + added config reset functionality and keybinding. use this if you messed up the XML or changed the GUI scale
 -- + if mod 'keyboardSteerMogli' is detected we move some HUD elements to let them not overlap
+-- * moved the rpm and temperature HUD elements inside the speedmeter
+-- * don't display not working HUD elements as a multiplayer (and not being host) client
 --
 -- 2019-01-01 - V1.3.1.1
 -- * bugfix for dedicated servers
