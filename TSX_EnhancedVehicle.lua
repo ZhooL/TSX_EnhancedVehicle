@@ -159,7 +159,7 @@ function TSX_EnhancedVehicle:resetConfig()
 
   ksm = 0
   if g_modIsLoaded.FS19_KeyboardSteer ~= nil then
-    ksm = 0.5
+    ksm = 1.0
     if debug > 1 then print("-> found keyboardSteerMogli. Adjusting some HUD elements") end
   end
 
