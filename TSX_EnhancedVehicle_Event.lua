@@ -1,10 +1,10 @@
---
+﻿--
 -- Mod: TSX_EnhancedVehicle_Event
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 01.01.2019
--- @Version: 1.3.1.0 
+-- @Date: 02.01.2019
+-- @Version: 1.4.0.0 
 
 local myName = "TSX_EnhancedVehicle_Event"
 

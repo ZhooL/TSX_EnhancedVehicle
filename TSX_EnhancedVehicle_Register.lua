@@ -1,10 +1,10 @@
---
+﻿--
 -- Mod: TSX_EnhancedVehicle_Register
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 01.01.2019
--- @Version: 1.3.1.0 
+-- @Date: 02.01.2019
+-- @Version: 1.4.0.0 
 
 -- #############################################################################
 
@@ -50,6 +50,10 @@ end
 
 function TSX_EnhancedVehicle_Register:loadMap()
   print("--> loaded TSX_EnhancedVehicle version " .. self.version .. " (by ZhooL) <--");
+
+  -- load our settings
+  TSX_EnhancedVehicle:readConfig()
+  TSX_EnhancedVehicle:resetConfig()
 end
 
 -- #############################################################################
@@ -61,18 +65,6 @@ end
 -- #############################################################################
 
 function TSX_EnhancedVehicle_Register:keyEvent(unicode, sym, modifier, isDown)
-  if Input.isKeyPressed(Input.KEY_KP_7) then
-    TSX_EnhancedVehicle.keyPressed.diff_front = true
-    if debug > 0 then print("KEY_KP_7 pressed") end
-  end
-  if Input.isKeyPressed(Input.KEY_KP_8) then
-    TSX_EnhancedVehicle.keyPressed.diff_back = true
-    if debug > 0 then print("KEY_KP_8 pressed") end
-  end
-  if Input.isKeyPressed(Input.KEY_KP_9) then
-    TSX_EnhancedVehicle.keyPressed.wd_mode = true
-    if debug > 0 then print("KEY_KP_9 pressed") end
-  end
 end
 
 -- #############################################################################

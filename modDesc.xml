@@ -1,18 +1,66 @@
-<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="40">
 	<author>ZhooL</author>
-  <version>1.3.1.1</version>
+
+  <version>1.4.0.0</version>
+
   <title>
     <de>EnhancedVehicle</de>
     <en>EnhancedVehicle</en>
   </title>
+
   <description>
     <de><![CDATA[Differentialsperren und Antriebsmodi für dein Fahrzeug. Mehr Fahrzeugsdetails im HUD.]]></de>
     <en><![CDATA[Differential locks and wheel drive modes for your vehicle. Shows more vehicle details on HUD.]]></en>
   </description>
+
   <iconFilename>TSX_EnhancedVehicle.dds</iconFilename>
+
   <multiplayer supported="true"/>
+
+	<l10n>
+		<text name="input_TSX_EnhancedVehicle_FD">
+      <de>EV: Differentialsperre Vorderachse an/aus</de>
+      <en>EV: Differential lock front axle on/off</en>
+    </text>
+		<text name="input_TSX_EnhancedVehicle_RD">
+      <de>EV: Differentialsperre Hinterachse an/aus</de>
+      <en>EV: Differential lock back axle on/off</en>
+    </text>
+		<text name="input_TSX_EnhancedVehicle_DM">
+      <de>EV: Antriebsmodus wechseln</de>
+      <en>EV: Change wheel drive mode</en>
+    </text>
+		<text name="input_TSX_EnhancedVehicle_RESET">
+      <de>EV: HUD zurücksetzen</de>
+      <en>EV: reset HUD</en>
+    </text>
+	</l10n>
+
+	<actions>
+		<action name="TSX_EnhancedVehicle_FD"    category="VEHICLE"/>
+		<action name="TSX_EnhancedVehicle_RD"    category="VEHICLE"/>
+		<action name="TSX_EnhancedVehicle_DM"    category="VEHICLE"/>
+		<action name="TSX_EnhancedVehicle_RESET" category="VEHICLE"/>
+	</actions>
+
+	<inputBinding>
+		<actionBinding action="TSX_EnhancedVehicle_FD">	
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_KP_7" axisComponent="+" inputComponent="+" index="1"/>
+		</actionBinding>	
+		<actionBinding action="TSX_EnhancedVehicle_RD">	
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_KP_8" axisComponent="+" inputComponent="+" index="1"/>
+		</actionBinding>	
+		<actionBinding action="TSX_EnhancedVehicle_DM">	
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_KP_9" axisComponent="+" inputComponent="+" index="1"/>
+		</actionBinding>	
+		<actionBinding action="TSX_EnhancedVehicle_RESET">	
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_KP_divide" axisComponent="+" inputComponent="+" index="1"/>
+		</actionBinding>	
+	</inputBinding>
+  
   <extraSourceFiles>	
     <sourceFile filename="TSX_EnhancedVehicle_Register.lua" /> 
   </extraSourceFiles>
+
 </modDesc>
