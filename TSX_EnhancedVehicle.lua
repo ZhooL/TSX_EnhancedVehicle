@@ -4,9 +4,12 @@
 -- Author: ZhooL
 -- email: ls19@dark-world.de
 -- @Date: 03.01.2019
--- @Version: 1.4.1.0
+-- @Version: 1.4.2.0
 
 -- CHANGELOG
+--
+-- 2019-01-03 - V1.4.2.0
+-- + added "Make Feinstaub great again" feature. vehicles without AdBlue (DEF) will produce more black'n'blue exhaust smoke
 --
 -- 2019-01-03 - V1.4.1.0
 -- * reworked HUD elements positioning. should fix positions once and for all regardless of screen resolutions and GUI scaling (press "KeyPad /" to adept)
@@ -42,6 +45,11 @@ local myName = "TSX_EnhancedVehicle"
 TSX_EnhancedVehicle = {}
 TSX_EnhancedVehicle.modDirectory  = g_currentModDirectory;
 TSX_EnhancedVehicle.confDirectory = getUserProfileAppPath().. "modsSettings/TSX_EnhancedVehicle/"; 
+
+TSX_EnhancedVehicle.feinstaub = {}
+TSX_EnhancedVehicle.feinstaub.enabled = true
+TSX_EnhancedVehicle.feinstaub.min = { 0.5, 0.5,  0.5, 1.5 }
+TSX_EnhancedVehicle.feinstaub.max = {   0,   0, 0.04,   5 }
 
 -- some global stuff
 TSX_EnhancedVehicle.uiScale = 1
@@ -270,7 +278,7 @@ end
 function TSX_EnhancedVehicle.registerEventListeners(vehicleType)
   if debug > 1 then print("-> " .. myName .. ": registerEventListeners ") end
     
-  for _,n in pairs( { "onLoad", "onPostLoad", "onUpdate", "onUpdateTick", "onDraw", "onReadStream", "onWriteStream", "onRegisterActionEvents" } ) do
+  for _,n in pairs( { "onLoad", "onPostLoad", "onUpdate", "onUpdateTick", "onDraw", "onReadStream", "onWriteStream", "onRegisterActionEvents", "onEnterVehicle" } ) do
     SpecializationUtil.registerEventListener(vehicleType, n, TSX_EnhancedVehicle)
   end 
 end
@@ -662,6 +670,31 @@ function TSX_EnhancedVehicle:onWriteStream(streamId, connection)
     streamWriteBool(streamId,  self.vData.is[2])
     streamWriteInt32(streamId, self.vData.is[3])
   end
+end
+
+-- #############################################################################
+
+function TSX_EnhancedVehicle:onEnterVehicle()
+  if debug > 1 then print("-> " .. myName .. ": onEnterVehicle" .. mySelf(self)) end
+
+  if self.spec_motorized  ~= nil and self.spec_fillUnit ~= nil and TSX_EnhancedVehicle.feinstaub.enabled then
+    local adblue = false
+    for _, fillUnit in ipairs(self.spec_fillUnit.fillUnits) do
+      if fillUnit.fillType == 33 then -- AdBlue
+        adblue = true
+      end
+    end
+
+    if not adblue and self.spec_motorized.exhaustEffects ~= nil then
+      if debug > 1 then print("--> found vehicle without AdBlue - modify exhaust") end
+      for _, exhaustEffect in ipairs(self.spec_motorized.exhaustEffects) do
+        exhaustEffect.minRpmColor = TSX_EnhancedVehicle.feinstaub.min
+        exhaustEffect.maxRpmColor = TSX_EnhancedVehicle.feinstaub.max
+      end
+    end
+  end
+
+--print(DebugUtil.printTableRecursively(self.spec_motorized.exhaustEffects, 0, 0, 2))
 end
 
 -- #############################################################################
