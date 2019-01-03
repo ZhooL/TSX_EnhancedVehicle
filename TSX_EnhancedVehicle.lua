@@ -3,10 +3,15 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 02.01.2019
--- @Version: 1.4.0.0 
+-- @Date: 03.01.2019
+-- @Version: 1.4.1.0
 
 -- CHANGELOG
+--
+-- 2019-01-03 - V1.4.1.0
+-- * reworked HUD elements positioning. should fix positions once and for all regardless of screen resolutions and GUI scaling (press "KeyPad /" to adept)
+-- * workaround (it displays "0") for attachments without a damage model (no spec_wearable)
+-- * changed the differential behavior for 2WD. this may cause some wobbly side effects on most vehicles but it's more correct now
 --
 -- 2019-01-02 - V1.4.0.0
 -- * fixed warning about the background overlay image (png -> dds)
@@ -155,13 +160,18 @@ function TSX_EnhancedVehicle:resetConfig()
   if debug > 0 then print("-> " .. myName .. ": resetConfig ") end
 
   if g_gameSettings.uiScale ~= nil then
-    if debug > 1 then print("-> uiScale: "..TSX_EnhancedVehicle.uiScale) end
     TSX_EnhancedVehicle.uiScale = g_gameSettings.uiScale
+--    local screenWidth, screenHeight = getScreenModeInfo(getScreenMode());
+    if debug > 1 then print("-> uiScale: "..TSX_EnhancedVehicle.uiScale) end
   end
+
+  -- to make life easier
+  local baseX = g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterX
+  local baseY = g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterY
 
   ksm = 0
   if g_modIsLoaded.FS19_KeyboardSteer ~= nil then
-    ksm = 1.0
+    ksm = 0.07 * TSX_EnhancedVehicle.uiScale
     if debug > 1 then print("-> found keyboardSteerMogli. Adjusting some HUD elements") end
   end
 
@@ -173,8 +183,8 @@ function TSX_EnhancedVehicle:resetConfig()
     TSX_EnhancedVehicle.fuel.posY = 0
     if g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement ~= nil then
       TSX_EnhancedVehicle.fuel.enabled = true  
-      TSX_EnhancedVehicle.fuel.posX = g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterX + ( 0.018 * TSX_EnhancedVehicle.uiScale )
-      TSX_EnhancedVehicle.fuel.posY = g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterY + ( (1.8 + ksm)  * g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusY ) 
+      TSX_EnhancedVehicle.fuel.posX = baseX + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusX / 2.3)
+      TSX_EnhancedVehicle.fuel.posY = baseY + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusY * 1.8) + ksm 
       if debug > 1 then print("--> reset values for 'fuel'. v1: "..bool_to_number(TSX_EnhancedVehicle.fuel.enabled)..", v2: "..TSX_EnhancedVehicle.fuel.posX..", v3: "..TSX_EnhancedVehicle.fuel.posY) end
     end
   end
@@ -186,8 +196,8 @@ function TSX_EnhancedVehicle:resetConfig()
     TSX_EnhancedVehicle.dmg.posY = 0
     if g_currentMission.inGameMenu.hud.speedMeter.damageGaugeIconElement ~= nil then
       TSX_EnhancedVehicle.dmg.enabled = true
-      TSX_EnhancedVehicle.dmg.posX = g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterX - ( 0.018 * TSX_EnhancedVehicle.uiScale )
-      TSX_EnhancedVehicle.dmg.posY = g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterY + ( (1.8 + ksm) * g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusY )
+      TSX_EnhancedVehicle.dmg.posX = baseX - (g_currentMission.inGameMenu.hud.speedMeter.damageGaugeRadiusX / 2.3)
+      TSX_EnhancedVehicle.dmg.posY = baseY + (g_currentMission.inGameMenu.hud.speedMeter.damageGaugeRadiusY * 1.8) + ksm
       if debug > 1 then print("--> reset values for 'dmg'. v1: "..bool_to_number(TSX_EnhancedVehicle.dmg.enabled)..", v2: "..TSX_EnhancedVehicle.dmg.posX..", v3: "..TSX_EnhancedVehicle.dmg.posY) end
     end
   end
@@ -199,7 +209,7 @@ function TSX_EnhancedVehicle:resetConfig()
     TSX_EnhancedVehicle.misc.posY = 0
     if g_currentMission.inGameMenu.hud.speedMeter.operatingTimeElement ~= nil then
       TSX_EnhancedVehicle.misc.enabled = true
-      TSX_EnhancedVehicle.misc.posX = g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterX
+      TSX_EnhancedVehicle.misc.posX = baseX
       TSX_EnhancedVehicle.misc.posY = TSX_EnhancedVehicle.overlayBorder * 1
       if debug > 1 then print("--> reset values for 'misc'. v1: "..bool_to_number(TSX_EnhancedVehicle.misc.enabled)..", v2: "..TSX_EnhancedVehicle.misc.posX..", v3: "..TSX_EnhancedVehicle.misc.posY) end
     end
@@ -212,8 +222,8 @@ function TSX_EnhancedVehicle:resetConfig()
     TSX_EnhancedVehicle.rpm.posY = 0
     if g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterX ~= nil then
       TSX_EnhancedVehicle.rpm.enabled = true
-      TSX_EnhancedVehicle.rpm.posX = g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterX - ( 0.021 * TSX_EnhancedVehicle.uiScale )
-      TSX_EnhancedVehicle.rpm.posY = g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterY - ( 0.0075 * TSX_EnhancedVehicle.uiScale )          
+      TSX_EnhancedVehicle.rpm.posX = baseX - (g_currentMission.inGameMenu.hud.speedMeter.damageGaugeRadiusX / 1.8)
+      TSX_EnhancedVehicle.rpm.posY = baseY
       if debug > 1 then print("--> reset values for 'rpm'. v1: "..bool_to_number(TSX_EnhancedVehicle.rpm.enabled)..", v2: "..TSX_EnhancedVehicle.rpm.posX..", v3: "..TSX_EnhancedVehicle.rpm.posY) end
     end
   end
@@ -225,8 +235,8 @@ function TSX_EnhancedVehicle:resetConfig()
     TSX_EnhancedVehicle.temp.posY = 0
     if g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterX ~= nil then
       TSX_EnhancedVehicle.temp.enabled = true
-      TSX_EnhancedVehicle.temp.posX = g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterX + ( 0.021 * TSX_EnhancedVehicle.uiScale )
-      TSX_EnhancedVehicle.temp.posY = g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterY - ( 0.0075 * TSX_EnhancedVehicle.uiScale )
+      TSX_EnhancedVehicle.temp.posX = baseX + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusX / 1.8)
+      TSX_EnhancedVehicle.temp.posY = baseY
       if debug > 1 then print("--> reset values for 'temp'. v1: "..bool_to_number(TSX_EnhancedVehicle.temp.enabled)..", v2: "..TSX_EnhancedVehicle.temp.posX..", v3: "..TSX_EnhancedVehicle.temp.posY) end
     end
   end
@@ -238,8 +248,8 @@ function TSX_EnhancedVehicle:resetConfig()
     TSX_EnhancedVehicle.diff.posY = 0
     if g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement ~= nil then
       TSX_EnhancedVehicle.diff.enabled = true
-      TSX_EnhancedVehicle.diff.posX = g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterX + ( 0.035 * TSX_EnhancedVehicle.uiScale )
-      TSX_EnhancedVehicle.diff.posY = g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterY + ( (2.5 + ksm) * g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusY )
+      TSX_EnhancedVehicle.diff.posX = baseX + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusX * 0.87)
+      TSX_EnhancedVehicle.diff.posY = baseY + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusY * 2.45) + ksm
       if debug > 1 then print("--> reset values for 'diff'. v1: "..bool_to_number(TSX_EnhancedVehicle.diff.enabled)..", v2: "..TSX_EnhancedVehicle.diff.posX..", v3: "..TSX_EnhancedVehicle.diff.posY) end
     end
   end
@@ -337,13 +347,13 @@ function TSX_EnhancedVehicle:onUpdate(dt)
     -- wheel drive mode
     if self.vData.is[3] ~= self.vData.want[3] then
       if self.vData.want[3] == 0 then
-        updateDifferential(self.rootNode, 2, 0.9, 1)
+        updateDifferential(self.rootNode, 2, 0, 0)
         if debug > 0 then print("--> ("..self.rootNode..") changed wheel drive mode to: 2WD") end
       elseif self.vData.want[3] == 1 then
         updateDifferential(self.rootNode, 2, self.vData.torqueRatio[3], 1)
         if debug > 0 then print("--> ("..self.rootNode..") changed wheel drive mode to: 4WD") end
       elseif self.vData.want[3] == 2 then
-        updateDifferential(self.rootNode, 2, 1, 1)
+        updateDifferential(self.rootNode, 2, 1, 0)
         if debug > 0 then print("--> ("..self.rootNode..") changed wheel drive mode to: FWD") end
       end
       self.vData.is[3] = self.vData.want[3]
@@ -366,6 +376,15 @@ function TSX_EnhancedVehicle:onDraw()
 
   -- only on client side and GUI is visible
   if self.isClient and not g_gui:getIsGuiVisible() then
+
+    -- render some help points into speedMeter
+--    setTextColor(1,0,0,1);
+--    setTextAlignment(RenderText.ALIGN_CENTER);
+--    setTextVerticalAlignment(RenderText.VERTICAL_ALIGN_MIDDLE)
+--    setTextBold(false);
+--    renderText(g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterX, g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterY, 0.01, "O")
+--    renderText(g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterX + g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusX, g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterY + g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusY, 0.01, "O")
+--    renderText(g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterX - g_currentMission.inGameMenu.hud.speedMeter.damageGaugeRadiusX, g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterY + g_currentMission.inGameMenu.hud.speedMeter.damageGaugeRadiusY, 0.01, "O")
 
     -- prepare overlays
     if TSX_EnhancedVehicle.overlay["fuel"] == nil then
@@ -516,7 +535,7 @@ function TSX_EnhancedVehicle:onDraw()
       -- render text      
       setTextColor(1,1,1,1);
       setTextAlignment(RenderText.ALIGN_CENTER);    
-      setTextVerticalAlignment(RenderText.VERTICAL_ALIGN_MIDDLE)
+      setTextVerticalAlignment(RenderText.VERTICAL_ALIGN_TOP)
       setTextBold(true);
       renderText(TSX_EnhancedVehicle.rpm.posX, TSX_EnhancedVehicle.rpm.posY, TSX_EnhancedVehicle.fontSize, rpm_txt)
     end
@@ -532,7 +551,7 @@ function TSX_EnhancedVehicle:onDraw()
       -- render text      
       setTextColor(1,1,1,1);
       setTextAlignment(RenderText.ALIGN_CENTER);    
-      setTextVerticalAlignment(RenderText.VERTICAL_ALIGN_MIDDLE)
+      setTextVerticalAlignment(RenderText.VERTICAL_ALIGN_TOP)
       setTextBold(true);
       renderText(TSX_EnhancedVehicle.temp.posX, TSX_EnhancedVehicle.temp.posY, TSX_EnhancedVehicle.fontSize, temp_txt)
     end
@@ -743,7 +762,11 @@ end
 function getDmg(start)
   if start.spec_attacherJoints.attachedImplements ~= nil then      
     for _, implement in pairs(start.spec_attacherJoints.attachedImplements) do
-      dmg_txt2 = string.format("%s: %.1f", implement.object.typeDesc, (implement.object.spec_wearable.totalAmount * 100)) .. "%\n" .. dmg_txt2
+      local tA = 0
+      if implement.object.spec_wearable ~= nil and implement.object.spec_wearable.totalAmount ~= nil then
+        tA = implement.object.spec_wearable.totalAmount
+      end
+      dmg_txt2 = string.format("%s: %.1f", implement.object.typeDesc, (tA * 100)) .. "%\n" .. dmg_txt2
       h = h + TSX_EnhancedVehicle.fontSize + TSX_EnhancedVehicle.textPadding 
       if implement.object.spec_attacherJoints ~= nil then
         getDmg(implement.object)
