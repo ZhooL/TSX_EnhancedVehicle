@@ -21,7 +21,7 @@ This is a Mod for Farming Simulator 19. It adds differential locks and wheel dri
 **NOTE: in multiplayer games all clients, except the master, won't display mass correctly due to GIANTS Engine fail**
 * key bindings can be changed in the game options menu
 * if mod 'keyboardSteeringMogli' is detected some HUD elements are moved a bit to avoid overlap
-* vehicles without AdBlue/DEF will produce more black'n'smoke exhaust smoke
+* vehicles without AdBlue/DEF will produce more black'n'blue exhaust smoke
 
 ## what this mod doesn't do
 * taking care of consoles. Buy a PC for proper gaming

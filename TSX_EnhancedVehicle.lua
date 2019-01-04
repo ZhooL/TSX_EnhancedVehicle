@@ -3,13 +3,14 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 03.01.2019
+-- @Date: 04.01.2019
 -- @Version: 1.4.2.0
 
 -- CHANGELOG
 --
--- 2019-01-03 - V1.4.2.0
+-- 2019-01-04 - V1.4.2.0
 -- + added "Make Feinstaub great again" feature. vehicles without AdBlue (DEF) will produce more black'n'blue exhaust smoke
+-- * gave keyboard binding display in help menu a very low priority to not disturb the display of more important bindings
 --
 -- 2019-01-03 - V1.4.1.0
 -- * reworked HUD elements positioning. should fix positions once and for all regardless of screen resolutions and GUI scaling (press "KeyPad /" to adept)
@@ -45,11 +46,6 @@ local myName = "TSX_EnhancedVehicle"
 TSX_EnhancedVehicle = {}
 TSX_EnhancedVehicle.modDirectory  = g_currentModDirectory;
 TSX_EnhancedVehicle.confDirectory = getUserProfileAppPath().. "modsSettings/TSX_EnhancedVehicle/"; 
-
-TSX_EnhancedVehicle.feinstaub = {}
-TSX_EnhancedVehicle.feinstaub.enabled = true
-TSX_EnhancedVehicle.feinstaub.min = { 0.5, 0.5,  0.5, 1.5 }
-TSX_EnhancedVehicle.feinstaub.max = {   0,   0, 0.04,   5 }
 
 -- some global stuff
 TSX_EnhancedVehicle.uiScale = 1
@@ -111,6 +107,7 @@ function TSX_EnhancedVehicle:readConfig()
     -- load existing XMF file
     xml = loadXMLFile("TSX_EnhancedVehicle_XML", file, "TSX_EnhancedVehicleSettings");
 
+    -- HUD stuff
     for _, section in ipairs(TSX_EnhancedVehicle.sections) do
       group = "hud." .. section
       groupNameTag = string.format("TSX_EnhancedVehicleSettings.%s(%d)", group, 0) 
@@ -127,6 +124,28 @@ function TSX_EnhancedVehicle:readConfig()
         TSX_EnhancedVehicle[section].posX = v2
         TSX_EnhancedVehicle[section].posY = v3
       end          
+    end
+
+    -- Feinstaub
+    group = "feinstaub"
+    groupNameTag = string.format("TSX_EnhancedVehicleSettings.%s(%d)", group, 0)
+    v1 =  getXMLBool(xml,  groupNameTag.. "#enabled")
+    v2 = getXMLString(xml, groupNameTag.. "#min")
+    v3 = getXMLString(xml, groupNameTag.. "#max")
+    if v1 == nil or v2 == nil or v3 == nil then
+      if debug > 1 then print("--> can't find values for '"..group.."'. Resetting config.") end
+      TSX_EnhancedVehicle:resetConfig()
+    else
+      if debug > 1 then print("--> found values for '"..group.."'. v1: "..bool_to_number(v1)..", v2: "..v2..", v3: "..v3) end
+      TSX_EnhancedVehicle.feinstaub = {}
+      TSX_EnhancedVehicle.feinstaub.enabled = v1
+      TSX_EnhancedVehicle.feinstaub.min = StringUtil.splitString(",", v2)
+      TSX_EnhancedVehicle.feinstaub.max = StringUtil.splitString(",", v3)
+      -- convert string to float to avoid later shader errors
+      for _i=1,4 do
+        TSX_EnhancedVehicle.feinstaub.min[_i] = tonumber(TSX_EnhancedVehicle.feinstaub.min[_i])
+        TSX_EnhancedVehicle.feinstaub.max[_i] = tonumber(TSX_EnhancedVehicle.feinstaub.max[_i])
+      end
     end
   end
 end
@@ -148,16 +167,24 @@ function TSX_EnhancedVehicle:writeConfig()
   local xml
   local groupNameTag
   local group
-  xml = createXMLFile("TSX_EnhancedVehicle_XML", file, "TSX_EnhancedVehicleSettings");
+  xml = createXMLFile("TSX_EnhancedVehicle_XML", file, "TSX_EnhancedVehicleSettings")
 
   for _, section in ipairs(TSX_EnhancedVehicle.sections) do
     group = "hud." .. section
     groupNameTag = string.format("TSX_EnhancedVehicleSettings.%s(%d)", group, 0) 
-    setXMLBool(xml,  groupNameTag .. "#enabled", TSX_EnhancedVehicle[section].enabled);
-    setXMLFloat(xml, groupNameTag .. "#posX",    TSX_EnhancedVehicle[section].posX);
-    setXMLFloat(xml, groupNameTag .. "#posY",    TSX_EnhancedVehicle[section].posY);
+    setXMLBool(xml,  groupNameTag .. "#enabled", TSX_EnhancedVehicle[section].enabled)
+    setXMLFloat(xml, groupNameTag .. "#posX",    TSX_EnhancedVehicle[section].posX)
+    setXMLFloat(xml, groupNameTag .. "#posY",    TSX_EnhancedVehicle[section].posY)
     if debug > 1 then print("--> wrote values for '"..section.."'. v1: "..bool_to_number(TSX_EnhancedVehicle[section].enabled)..", v2: "..TSX_EnhancedVehicle[section].posX..", v3: "..TSX_EnhancedVehicle[section].posY) end
   end
+
+  -- Feinstaub
+  group = "feinstaub"
+  groupNameTag = string.format("TSX_EnhancedVehicleSettings.%s(%d)", group, 0)
+  setXMLBool(xml,   groupNameTag .. "#enabled", TSX_EnhancedVehicle.feinstaub.enabled)
+  setXMLString(xml, groupNameTag .. "#min",     table.concat(TSX_EnhancedVehicle.feinstaub.min, ","))
+  setXMLString(xml, groupNameTag .. "#max",     table.concat(TSX_EnhancedVehicle.feinstaub.max, ","))
+  if debug > 1 then print("--> wrote values for '"..group.."'. v1: "..bool_to_number(TSX_EnhancedVehicle.feinstaub.enabled)..", v2: "..table.concat(TSX_EnhancedVehicle.feinstaub.min, ",")..", v3: "..table.concat(TSX_EnhancedVehicle.feinstaub.max, ",")) end
 
   saveXMLFile(xml)
 end
@@ -177,6 +204,7 @@ function TSX_EnhancedVehicle:resetConfig()
   local baseX = g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterX
   local baseY = g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterY
 
+  -- support for keyboardSteer
   ksm = 0
   if g_modIsLoaded.FS19_KeyboardSteer ~= nil then
     ksm = 0.07 * TSX_EnhancedVehicle.uiScale
@@ -260,6 +288,15 @@ function TSX_EnhancedVehicle:resetConfig()
       TSX_EnhancedVehicle.diff.posY = baseY + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusY * 2.45) + ksm
       if debug > 1 then print("--> reset values for 'diff'. v1: "..bool_to_number(TSX_EnhancedVehicle.diff.enabled)..", v2: "..TSX_EnhancedVehicle.diff.posX..", v3: "..TSX_EnhancedVehicle.diff.posY) end
     end
+  end
+
+  -- Feinstaub
+  if TSX_EnhancedVehicle.feinstaub == nil then
+    TSX_EnhancedVehicle.feinstaub = {}
+    TSX_EnhancedVehicle.feinstaub.enabled = true
+    TSX_EnhancedVehicle.feinstaub.min = { 0.5, 0.5,  0.5, 1.5 }
+    TSX_EnhancedVehicle.feinstaub.max = {   0,   0, 0.04,   5 }
+    if debug > 1 then print("--> reset values for 'feinstaub'. v1: "..bool_to_number(TSX_EnhancedVehicle.feinstaub.enabled)..", v2: "..table.concat(TSX_EnhancedVehicle.feinstaub.min, ",")..", v3: "..table.concat(TSX_EnhancedVehicle.feinstaub.max, ",")) end
   end
 
   TSX_EnhancedVehicle:writeConfig()
@@ -722,16 +759,19 @@ function TSX_EnhancedVehicle:onRegisterActionEvents(isSelected, isOnActiveVehicl
 
       -- help menu priorization
       if g_inputBinding ~= nil and g_inputBinding.events ~= nil and g_inputBinding.events[eventName] ~= nil then
-        if isSelected then
+        -- lowest priority in help menu
+        g_inputBinding.events[eventName].displayPriority = 99
+--        if isSelected then
           -- highest priority in help menu
-          g_inputBinding.events[eventName].displayPriority = 1
-        elseif isOnActiveVehicle then
+--          g_inputBinding.events[eventName].displayPriority = 3
+--          print("lala")
+--        elseif isOnActiveVehicle then
           -- lowest priority in help menu
-          g_inputBinding.events[eventName].displayPriority = 3
-          if actionName == "TSX_EnhancedVehicle_RESET" then
-            g_inputBinding.events[eventName].displayPriority = 99
-          end
-        end
+--          g_inputBinding.events[eventName].displayPriority = 5
+--          if actionName == "TSX_EnhancedVehicle_RESET" then
+--            g_inputBinding.events[eventName].displayPriority = 99
+--          end
+--        end
       end
     end
   end
