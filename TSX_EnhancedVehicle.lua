@@ -11,6 +11,7 @@
 -- 2019-01-04 - V1.4.2.0
 -- + added "Make Feinstaub great again" feature. vehicles without AdBlue (DEF) will produce more black'n'blue exhaust smoke
 -- * gave keyboard binding display in help menu a very low priority to not disturb the display of more important bindings
+-- * changed the 2WD behavior again. should be not so wobbly any longer.
 --
 -- 2019-01-03 - V1.4.1.0
 -- * reworked HUD elements positioning. should fix positions once and for all regardless of screen resolutions and GUI scaling (press "KeyPad /" to adept)
@@ -47,6 +48,12 @@ TSX_EnhancedVehicle = {}
 TSX_EnhancedVehicle.modDirectory  = g_currentModDirectory;
 TSX_EnhancedVehicle.confDirectory = getUserProfileAppPath().. "modsSettings/TSX_EnhancedVehicle/"; 
 
+-- for debugging purpose
+TSX_dbg = false
+TSX_dbg1 = 0
+TSX_dbg2 = 0
+TSX_dbg3 = 0
+
 -- some global stuff
 TSX_EnhancedVehicle.uiScale = 1
 if g_gameSettings.uiScale ~= nil then
@@ -57,8 +64,13 @@ TSX_EnhancedVehicle.fontSize            = 0.01  * TSX_EnhancedVehicle.uiScale
 TSX_EnhancedVehicle.textPadding         = 0.001 * TSX_EnhancedVehicle.uiScale
 TSX_EnhancedVehicle.overlayBorder       = 0.003 * TSX_EnhancedVehicle.uiScale
 TSX_EnhancedVehicle.overlayTransparancy = 0.75
-TSX_EnhancedVehicle.actions             = { 'TSX_EnhancedVehicle_FD', 'TSX_EnhancedVehicle_RD', 'TSX_EnhancedVehicle_DM', 'TSX_EnhancedVehicle_RESET' }
 TSX_EnhancedVehicle.sections            = { 'fuel', 'dmg', 'misc', 'rpm', 'temp', 'diff' }
+TSX_EnhancedVehicle.actions             = { 'TSX_EnhancedVehicle_FD', 'TSX_EnhancedVehicle_RD', 'TSX_EnhancedVehicle_DM', 'TSX_EnhancedVehicle_RESET' }
+if TSX_dbg then
+  for _, v in pairs({ 'TSX_DBG1_UP', 'TSX_DBG1_DOWN', 'TSX_DBG2_UP', 'TSX_DBG2_DOWN', 'TSX_DBG3_UP', 'TSX_DBG3_DOWN' }) do
+    table.insert(TSX_EnhancedVehicle.actions, v)
+  end
+end
 
 -- some colors
 TSX_EnhancedVehicle.color = {
@@ -392,7 +404,7 @@ function TSX_EnhancedVehicle:onUpdate(dt)
     -- wheel drive mode
     if self.vData.is[3] ~= self.vData.want[3] then
       if self.vData.want[3] == 0 then
-        updateDifferential(self.rootNode, 2, 0, 0)
+        updateDifferential(self.rootNode, 2, -0.00001, 1)
         if debug > 0 then print("--> ("..self.rootNode..") changed wheel drive mode to: 2WD") end
       elseif self.vData.want[3] == 1 then
         updateDifferential(self.rootNode, 2, self.vData.torqueRatio[3], 1)
@@ -421,6 +433,15 @@ function TSX_EnhancedVehicle:onDraw()
 
   -- only on client side and GUI is visible
   if self.isClient and not g_gui:getIsGuiVisible() then
+
+    -- render debug stuff
+    if TSX_dbg then
+      setTextColor(1,0,0,1);
+      setTextAlignment(RenderText.ALIGN_CENTER);
+      setTextVerticalAlignment(RenderText.VERTICAL_ALIGN_MIDDLE)
+      setTextBold(true);
+      renderText(0.5, 0.5, 0.025, "dbg1: "..TSX_dbg1..", dbg2: "..TSX_dbg2..", dbg3: "..TSX_dbg3)
+    end
 
     -- render some help points into speedMeter
 --    setTextColor(1,0,0,1);
@@ -756,7 +777,6 @@ function TSX_EnhancedVehicle:onRegisterActionEvents(isSelected, isOnActiveVehicl
     -- attach our actions
     for _ ,actionName in pairs(TSX_EnhancedVehicle.actions) do
       local _, eventName = self:addActionEvent(self.ActionEvents, InputAction[actionName], self, TSX_EnhancedVehicle.onActionCall, false, true, false, true, nil);
-
       -- help menu priorization
       if g_inputBinding ~= nil and g_inputBinding.events ~= nil and g_inputBinding.events[eventName] ~= nil then
         -- lowest priority in help menu
@@ -764,7 +784,6 @@ function TSX_EnhancedVehicle:onRegisterActionEvents(isSelected, isOnActiveVehicl
 --        if isSelected then
           -- highest priority in help menu
 --          g_inputBinding.events[eventName].displayPriority = 3
---          print("lala")
 --        elseif isOnActiveVehicle then
           -- lowest priority in help menu
 --          g_inputBinding.events[eventName].displayPriority = 5
@@ -824,6 +843,36 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
     end
     TSX_EnhancedVehicle:resetConfig()
   end
+
+  -- debug stuff
+  if TSX_dbg then
+    -- debug1
+    if actionName == "TSX_DBG1_UP" then
+      TSX_dbg1 = TSX_dbg1 + 0.01
+      updateDifferential(self.rootNode, 2, TSX_dbg1, TSX_dbg2)
+    end
+    if actionName == "TSX_DBG1_DOWN" then
+      TSX_dbg1 = TSX_dbg1 - 0.01
+      updateDifferential(self.rootNode, 2, TSX_dbg1, TSX_dbg2)
+    end
+    -- debug2
+    if actionName == "TSX_DBG2_UP" then
+      TSX_dbg2 = TSX_dbg2 + 0.01
+      updateDifferential(self.rootNode, 2, TSX_dbg1, TSX_dbg2)
+    end
+    if actionName == "TSX_DBG2_DOWN" then
+      TSX_dbg2 = TSX_dbg2 - 0.01
+      updateDifferential(self.rootNode, 2, TSX_dbg1, TSX_dbg2)
+    end
+    -- debug3
+    if actionName == "TSX_DBG3_UP" then
+      TSX_dbg3 = TSX_dbg3 + 0.01
+    end
+    if actionName == "TSX_DBG3_DOWN" then
+      TSX_dbg3 = TSX_dbg3 - 0.01
+    end
+  end
+
 end
 
 -- #############################################################################
