@@ -3,10 +3,14 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 04.01.2019
--- @Version: 1.4.2.0
+-- @Date: 05.01.2019
+-- @Version: 1.4.3.0
 
 -- CHANGELOG
+--
+-- 2019-01-05 - V1.4.3.0
+-- + added global option to choose whether keybindings are displayed in the help menu or not
+-- + added keybinding (default: KEYPAD *) to reload XML config on the fly
 --
 -- 2019-01-04 - V1.4.2.0
 -- + added "Make Feinstaub great again" feature. vehicles without AdBlue (DEF) will produce more black'n'blue exhaust smoke
@@ -40,7 +44,7 @@
 -- 2018-12-31 - V1.3.0.0
 -- * first release
 
-debug = 0 -- 0=0ff, 1=some, 2=everything, 3=madness
+debug = 2 -- 0=0ff, 1=some, 2=everything, 3=madness
 local myName = "TSX_EnhancedVehicle"
 
 -- #############################################################################
@@ -62,7 +66,7 @@ if g_gameSettings.uiScale ~= nil then
   TSX_EnhancedVehicle.uiScale = g_gameSettings.uiScale
 end
 TSX_EnhancedVehicle.sections = { 'fuel', 'dmg', 'misc', 'rpm', 'temp', 'diff' }
-TSX_EnhancedVehicle.actions  = { 'TSX_EnhancedVehicle_FD', 'TSX_EnhancedVehicle_RD', 'TSX_EnhancedVehicle_DM', 'TSX_EnhancedVehicle_RESET' }
+TSX_EnhancedVehicle.actions  = { 'TSX_EnhancedVehicle_FD', 'TSX_EnhancedVehicle_RD', 'TSX_EnhancedVehicle_DM', 'TSX_EnhancedVehicle_RESET', 'TSX_EnhancedVehicle_RELOAD' }
 if TSX_dbg then
   for _, v in pairs({ 'TSX_DBG1_UP', 'TSX_DBG1_DOWN', 'TSX_DBG2_UP', 'TSX_DBG2_DOWN', 'TSX_DBG3_UP', 'TSX_DBG3_DOWN' }) do
     table.insert(TSX_EnhancedVehicle.actions, v)
@@ -131,15 +135,17 @@ function TSX_EnhancedVehicle:readConfig()
     v2 = getXMLFloat(xml, groupNameTag.. "#textPadding")
     v3 = getXMLFloat(xml, groupNameTag.. "#overlayBorder")
     v4 = getXMLFloat(xml, groupNameTag.. "#overlayTransparancy")
+    v5 = getXMLBool(xml,  groupNameTag.. "#showKeysInHelpMenu")
     if v1 == nil or v2 == nil or v3 == nil or v4 == nil then
       if debug > 1 then print("--> can't find values for '"..group.."'. Resetting config.") end
       TSX_EnhancedVehicle:resetConfig()
     else
-      if debug > 1 then print("--> found values for '"..group.."'. v1: "..v1..", v2: "..v2..", v3: "..v3..", v4: "..v4) end
+      if debug > 1 then print("--> found values for '"..group.."'. v1: "..v1..", v2: "..v2..", v3: "..v3..", v4: "..v4..", v5: "..bool_to_number(v5)) end
       TSX_EnhancedVehicle.fontSize            = v1
       TSX_EnhancedVehicle.textPadding         = v2
       TSX_EnhancedVehicle.overlayBorder       = v3
       TSX_EnhancedVehicle.overlayTransparancy = v4
+      TSX_EnhancedVehicle.showKeysInHelpMenu  = v5
     end
 
     -- Feinstaub
@@ -202,6 +208,7 @@ function TSX_EnhancedVehicle:writeConfig()
   setXMLFloat(xml, groupNameTag.. "#textPadding",         TSX_EnhancedVehicle.textPadding)
   setXMLFloat(xml, groupNameTag.. "#overlayBorder",       TSX_EnhancedVehicle.overlayBorder)
   setXMLFloat(xml, groupNameTag.. "#overlayTransparancy", TSX_EnhancedVehicle.overlayTransparancy)
+  setXMLBool(xml,  groupNameTag.. "#showKeysInHelpMenu",  TSX_EnhancedVehicle.showKeysInHelpMenu)
   if debug > 1 then print("--> wrote values for '"..group.."'") end
 
   -- Feinstaub
@@ -242,6 +249,7 @@ function TSX_EnhancedVehicle:resetConfig()
   if TSX_EnhancedVehicle.textPadding == nil then         TSX_EnhancedVehicle.textPadding         = 0.001 end
   if TSX_EnhancedVehicle.overlayBorder == nil then       TSX_EnhancedVehicle.overlayBorder       = 0.003 end
   if TSX_EnhancedVehicle.overlayTransparancy == nil then TSX_EnhancedVehicle.overlayTransparancy = 0.75  end
+  if TSX_EnhancedVehicle.showKeysInHelpMenu == nil then  TSX_EnhancedVehicle.showKeysInHelpMenu  = true  end
 
   -- fuel
   if TSX_EnhancedVehicle.fuel == nil then
@@ -802,18 +810,14 @@ function TSX_EnhancedVehicle:onRegisterActionEvents(isSelected, isOnActiveVehicl
       local _, eventName = self:addActionEvent(self.ActionEvents, InputAction[actionName], self, TSX_EnhancedVehicle.onActionCall, false, true, false, true, nil);
       -- help menu priorization
       if g_inputBinding ~= nil and g_inputBinding.events ~= nil and g_inputBinding.events[eventName] ~= nil then
-        -- lowest priority in help menu
-        g_inputBinding.events[eventName].displayPriority = 99
---        if isSelected then
-          -- highest priority in help menu
---          g_inputBinding.events[eventName].displayPriority = 3
---        elseif isOnActiveVehicle then
-          -- lowest priority in help menu
---          g_inputBinding.events[eventName].displayPriority = 5
---          if actionName == "TSX_EnhancedVehicle_RESET" then
---            g_inputBinding.events[eventName].displayPriority = 99
---          end
---        end
+        g_inputBinding.events[eventName].displayPriority = 98
+        if actionName == "TSX_EnhancedVehicle_DM" then
+          g_inputBinding.events[eventName].displayPriority = 99
+        end
+        -- don't show certain/all keys in help menu
+        if actionName == "TSX_EnhancedVehicle_RESET" or actionName == "TSX_EnhancedVehicle_RELOAD" or not TSX_EnhancedVehicle.showKeysInHelpMenu then
+          g_inputBinding.events[eventName].displayIsVisible = false
+        end
       end
     end
   end
@@ -865,6 +869,11 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
       TSX_EnhancedVehicle[section] = nil
     end
     TSX_EnhancedVehicle:resetConfig()
+  end
+
+  -- reload config
+  if actionName == "TSX_EnhancedVehicle_RELOAD" then
+    TSX_EnhancedVehicle:readConfig()
   end
 
   -- debug stuff

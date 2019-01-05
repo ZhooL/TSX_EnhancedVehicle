@@ -2,7 +2,7 @@
 <modDesc descVersion="40">
   <author>ZhooL</author>
 
-  <version>1.4.2.0</version>
+  <version>1.4.3.0</version>
 
   <title>
     <de>EnhancedVehicle</de>
@@ -35,13 +35,18 @@
       <de>EV: HUD zurücksetzen</de>
       <en>EV: reset HUD</en>
     </text>
+    <text name="input_TSX_EnhancedVehicle_RELOAD">
+      <de>EV: XML Konfigurationsdatei neu laden</de>
+      <en>EV: reload XML config file</en>
+    </text>
   </l10n>
 
   <actions>
-    <action name="TSX_EnhancedVehicle_FD"    category="VEHICLE"/>
-    <action name="TSX_EnhancedVehicle_RD"    category="VEHICLE"/>
-    <action name="TSX_EnhancedVehicle_DM"    category="VEHICLE"/>
-    <action name="TSX_EnhancedVehicle_RESET" category="VEHICLE"/>
+    <action name="TSX_EnhancedVehicle_FD"     category="VEHICLE"/>
+    <action name="TSX_EnhancedVehicle_RD"     category="VEHICLE"/>
+    <action name="TSX_EnhancedVehicle_DM"     category="VEHICLE"/>
+    <action name="TSX_EnhancedVehicle_RESET"  category="VEHICLE"/>
+    <action name="TSX_EnhancedVehicle_RELOAD" category="VEHICLE"/>
 <!--
     <action name="TSX_DBG1_UP"   category="VEHICLE"/>
     <action name="TSX_DBG1_DOWN" category="VEHICLE"/>
@@ -64,6 +69,9 @@
     </actionBinding>
     <actionBinding action="TSX_EnhancedVehicle_RESET">
       <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_divide" axisComponent="+" inputComponent="+" index="2"/>
+    </actionBinding>
+    <actionBinding action="TSX_EnhancedVehicle_RELOAD">
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_multiply" axisComponent="+" inputComponent="+" index="2"/>
     </actionBinding>
 <!--
     <actionBinding action="TSX_DBG1_UP">
