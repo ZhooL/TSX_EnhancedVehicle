@@ -44,7 +44,7 @@
 -- 2018-12-31 - V1.3.0.0
 -- * first release
 
-debug = 2 -- 0=0ff, 1=some, 2=everything, 3=madness
+debug = 0 -- 0=0ff, 1=some, 2=everything, 3=madness
 local myName = "TSX_EnhancedVehicle"
 
 -- #############################################################################
