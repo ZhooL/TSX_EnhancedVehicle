@@ -1,4 +1,4 @@
-﻿--
+--
 -- Mod: TSX_EnhancedVehicle_Event
 --
 -- Author: ZhooL

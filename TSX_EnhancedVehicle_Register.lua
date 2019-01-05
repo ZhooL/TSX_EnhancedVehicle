@@ -1,4 +1,4 @@
-﻿--
+--
 -- Mod: TSX_EnhancedVehicle_Register
 --
 -- Author: ZhooL
