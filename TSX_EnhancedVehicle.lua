@@ -9,6 +9,8 @@
 -- CHANGELOG
 --
 -- 2019-01-05 - V1.4.3.0
+-- * replaced ugly text display of diff status by a neat graphic
+-- + added "clonk" sound when switching diff or drive mode
 -- + added global option to choose whether keybindings are displayed in the help menu or not
 -- + added keybinding (default: KEYPAD *) to reload XML config on the fly
 --
@@ -43,6 +45,8 @@
 --
 -- 2018-12-31 - V1.3.0.0
 -- * first release
+--
+-- license: https://creativecommons.org/licenses/by-nc-sa/4.0/
 
 debug = 0 -- 0=0ff, 1=some, 2=everything, 3=madness
 local myName = "TSX_EnhancedVehicle"
@@ -52,6 +56,11 @@ local myName = "TSX_EnhancedVehicle"
 TSX_EnhancedVehicle = {}
 TSX_EnhancedVehicle.modDirectory  = g_currentModDirectory;
 TSX_EnhancedVehicle.confDirectory = getUserProfileAppPath().. "modsSettings/TSX_EnhancedVehicle/";
+
+-- for differential overlay (not yet in XML config)
+TSX_EnhancedVehicle.diff_overlayZoomFactor  = 15
+TSX_EnhancedVehicle.diff_overlayWidth       = 512
+TSX_EnhancedVehicle.diff_overlayHeight      = 1024
 
 -- for debugging purpose
 TSX_dbg = false
@@ -75,11 +84,13 @@ end
 
 -- some colors
 TSX_EnhancedVehicle.color = {
+  black  = {       0,       0,       0, 1 },
   white  = {       1,       1,       1, 1 },
   red    = { 255/255,   0/255,   0/255, 1 },
   green  = {   0/255, 255/255,   0/255, 1 },
   blue   = {   0/255,   0/255, 255/255, 1 },
   yellow = { 255/255, 255/255,   0/255, 1 },
+  gray   = { 128/255, 128/255, 128/255, 1 },
   dmg    = {  86/255, 142/255,  42/255, 1 },
   fuel   = { 124/255,  90/255,   8/255, 1 },
   adblue = {  48/255,  78/255, 249/255, 1 },
@@ -87,6 +98,11 @@ TSX_EnhancedVehicle.color = {
 
 -- for overlays
 TSX_EnhancedVehicle.overlay = {}
+
+-- for diff lock sound
+local file = TSX_EnhancedVehicle.modDirectory.."diff_lock.wav"
+TSX_EnhancedVehicle.DiffLockSoundId = createSample("DiffLockSound");
+loadSample(TSX_EnhancedVehicle.DiffLockSoundId, file, false);
 
 -- #############################################################################
 
@@ -136,16 +152,18 @@ function TSX_EnhancedVehicle:readConfig()
     v3 = getXMLFloat(xml, groupNameTag.. "#overlayBorder")
     v4 = getXMLFloat(xml, groupNameTag.. "#overlayTransparancy")
     v5 = getXMLBool(xml,  groupNameTag.. "#showKeysInHelpMenu")
-    if v1 == nil or v2 == nil or v3 == nil or v4 == nil then
+    v6 = getXMLBool(xml,  groupNameTag.. "#soundIsOn")
+    if v1 == nil or v2 == nil or v3 == nil or v4 == nil or v5 == nil or v6 == nil then
       if debug > 1 then print("--> can't find values for '"..group.."'. Resetting config.") end
       TSX_EnhancedVehicle:resetConfig()
     else
-      if debug > 1 then print("--> found values for '"..group.."'. v1: "..v1..", v2: "..v2..", v3: "..v3..", v4: "..v4..", v5: "..bool_to_number(v5)) end
+      if debug > 1 then print("--> found values for '"..group.."'. v1: "..v1..", v2: "..v2..", v3: "..v3..", v4: "..v4..", v5: "..bool_to_number(v5)..", v6: "..bool_to_number(v6)) end
       TSX_EnhancedVehicle.fontSize            = v1
       TSX_EnhancedVehicle.textPadding         = v2
       TSX_EnhancedVehicle.overlayBorder       = v3
       TSX_EnhancedVehicle.overlayTransparancy = v4
       TSX_EnhancedVehicle.showKeysInHelpMenu  = v5
+      TSX_EnhancedVehicle.soundIsOn           = v6
     end
 
     -- Feinstaub
@@ -209,6 +227,7 @@ function TSX_EnhancedVehicle:writeConfig()
   setXMLFloat(xml, groupNameTag.. "#overlayBorder",       TSX_EnhancedVehicle.overlayBorder)
   setXMLFloat(xml, groupNameTag.. "#overlayTransparancy", TSX_EnhancedVehicle.overlayTransparancy)
   setXMLBool(xml,  groupNameTag.. "#showKeysInHelpMenu",  TSX_EnhancedVehicle.showKeysInHelpMenu)
+  setXMLBool(xml,  groupNameTag.. "#soundIsOn",           TSX_EnhancedVehicle.soundIsOn)
   if debug > 1 then print("--> wrote values for '"..group.."'") end
 
   -- Feinstaub
@@ -250,6 +269,7 @@ function TSX_EnhancedVehicle:resetConfig()
   if TSX_EnhancedVehicle.overlayBorder == nil then       TSX_EnhancedVehicle.overlayBorder       = 0.003 end
   if TSX_EnhancedVehicle.overlayTransparancy == nil then TSX_EnhancedVehicle.overlayTransparancy = 0.75  end
   if TSX_EnhancedVehicle.showKeysInHelpMenu == nil then  TSX_EnhancedVehicle.showKeysInHelpMenu  = true  end
+  if TSX_EnhancedVehicle.soundIsOn == nil then           TSX_EnhancedVehicle.soundIsOn           = true  end
 
   -- fuel
   if TSX_EnhancedVehicle.fuel == nil then
@@ -324,8 +344,9 @@ function TSX_EnhancedVehicle:resetConfig()
     TSX_EnhancedVehicle.diff.posY = 0
     if g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement ~= nil then
       TSX_EnhancedVehicle.diff.enabled = true
-      TSX_EnhancedVehicle.diff.posX = baseX + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusX * 0.87)
-      TSX_EnhancedVehicle.diff.posY = baseY + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusY * 1.8) + ((TSX_EnhancedVehicle.fontSize + TSX_EnhancedVehicle.textPadding) * 4.2) + ksm
+      local _w, _h = getNormalizedScreenValues(TSX_EnhancedVehicle.diff_overlayWidth / TSX_EnhancedVehicle.diff_overlayZoomFactor * TSX_EnhancedVehicle.uiScale, TSX_EnhancedVehicle.diff_overlayHeight / TSX_EnhancedVehicle.diff_overlayZoomFactor * TSX_EnhancedVehicle.uiScale)
+      TSX_EnhancedVehicle.diff.posX = baseX - (_w / 2)
+      TSX_EnhancedVehicle.diff.posY = baseY + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusY * 1.8) + ksm
       if debug > 1 then print("--> reset values for 'diff'. v1: "..bool_to_number(TSX_EnhancedVehicle.diff.enabled)..", v2: "..TSX_EnhancedVehicle.diff.posX..", v3: "..TSX_EnhancedVehicle.diff.posY) end
     end
   end
@@ -492,13 +513,22 @@ function TSX_EnhancedVehicle:onDraw()
       TSX_EnhancedVehicle.overlay["dmg"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "overlay_bg.dds")
       setOverlayColor(TSX_EnhancedVehicle.overlay["dmg"], 0, 0, 0, TSX_EnhancedVehicle.overlayTransparancy)
     end
-    if TSX_EnhancedVehicle.overlay["diff"] == nil then
-      TSX_EnhancedVehicle.overlay["diff"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "overlay_bg.dds")
-      setOverlayColor(TSX_EnhancedVehicle.overlay["diff"], 0, 0, 0, TSX_EnhancedVehicle.overlayTransparancy)
-    end
     if TSX_EnhancedVehicle.overlay["misc"] == nil then
       TSX_EnhancedVehicle.overlay["misc"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "overlay_bg.dds")
       setOverlayColor(TSX_EnhancedVehicle.overlay["misc"], 0, 0, 0, TSX_EnhancedVehicle.overlayTransparancy)
+    end
+    if TSX_EnhancedVehicle.overlay["diff_bg"] == nil then
+      TSX_EnhancedVehicle.overlay["diff_bg"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "overlay_diff_bg.dds")
+      setOverlayColor(TSX_EnhancedVehicle.overlay["diff_bg"], 0, 0, 0, 1)
+    end
+    if TSX_EnhancedVehicle.overlay["diff_front"] == nil then
+      TSX_EnhancedVehicle.overlay["diff_front"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "overlay_diff_front.dds")
+    end
+    if TSX_EnhancedVehicle.overlay["diff_back"] == nil then
+      TSX_EnhancedVehicle.overlay["diff_back"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "overlay_diff_back.dds")
+    end
+    if TSX_EnhancedVehicle.overlay["diff_dm"] == nil then
+      TSX_EnhancedVehicle.overlay["diff_dm"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "overlay_diff_dm.dds")
     end
 
     -- ### do the fuel stuff ###
@@ -674,7 +704,7 @@ function TSX_EnhancedVehicle:onDraw()
         if self.vData.is[3] == 0 then
           _txt.txt[2]   = "2WD"
           _txt.bold[2]  = false
-          _txt.color[2] = "white"
+          _txt.color[2] = "gray"
         end
         if self.vData.is[3] == 1 then
           _txt.txt[2]   = "4WD"
@@ -684,26 +714,32 @@ function TSX_EnhancedVehicle:onDraw()
         if self.vData.is[3] == 2 then
           _txt.txt[2]   = "FWD"
           _txt.bold[2]  = false
-          _txt.color[2] = "white"
+          _txt.color[2] = "gray"
         end
       end
 
       -- render overlay
-      w = getTextWidth(fS, "VL-           -VR")
-      h = getTextHeight(fS, "X\nX\nX\nX\nX")
-      renderOverlay(TSX_EnhancedVehicle.overlay["diff"], TSX_EnhancedVehicle.diff.posX - TSX_EnhancedVehicle.overlayBorder - (w/2), TSX_EnhancedVehicle.diff.posY - TSX_EnhancedVehicle.overlayBorder, w + (TSX_EnhancedVehicle.overlayBorder * 2), h + (TSX_EnhancedVehicle.overlayBorder * 2))
+      w, h = getNormalizedScreenValues(TSX_EnhancedVehicle.diff_overlayWidth / TSX_EnhancedVehicle.diff_overlayZoomFactor * TSX_EnhancedVehicle.uiScale, TSX_EnhancedVehicle.diff_overlayHeight / TSX_EnhancedVehicle.diff_overlayZoomFactor * TSX_EnhancedVehicle.uiScale)
+      setOverlayColor(TSX_EnhancedVehicle.overlay["diff_front"], unpack(TSX_EnhancedVehicle.color[_txt.color[1]]))
+      setOverlayColor(TSX_EnhancedVehicle.overlay["diff_back"],  unpack(TSX_EnhancedVehicle.color[_txt.color[3]]))
+      setOverlayColor(TSX_EnhancedVehicle.overlay["diff_dm"],    unpack(TSX_EnhancedVehicle.color[_txt.color[2]]))
+
+      renderOverlay(TSX_EnhancedVehicle.overlay["diff_bg"],    TSX_EnhancedVehicle.diff.posX, TSX_EnhancedVehicle.diff.posY, w, h)
+      renderOverlay(TSX_EnhancedVehicle.overlay["diff_front"], TSX_EnhancedVehicle.diff.posX, TSX_EnhancedVehicle.diff.posY, w, h)
+      renderOverlay(TSX_EnhancedVehicle.overlay["diff_back"],  TSX_EnhancedVehicle.diff.posX, TSX_EnhancedVehicle.diff.posY, w, h)
+      renderOverlay(TSX_EnhancedVehicle.overlay["diff_dm"],    TSX_EnhancedVehicle.diff.posX, TSX_EnhancedVehicle.diff.posY, w, h)
 
       -- render text
       setTextColor(1,1,1,1);
       setTextAlignment(RenderText.ALIGN_CENTER);
       setTextVerticalAlignment(RenderText.VERTICAL_ALIGN_BOTTOM)
       setTextBold(false)
-      renderText(TSX_EnhancedVehicle.diff.posX, TSX_EnhancedVehicle.diff.posY, fS, "VL-           -VR\n|\n\n|\nHL-           -HR")
+--      renderText(TSX_EnhancedVehicle.diff.posX, TSX_EnhancedVehicle.diff.posY, fS, "VL-           -VR\n|\n\n|\nHL-           -HR")
       tmpY = TSX_EnhancedVehicle.diff.posY
       for j=3, 1, -1 do
         setTextBold(_txt.bold[j])
         setTextColor(unpack(TSX_EnhancedVehicle.color[_txt.color[j]]))
-        renderText(TSX_EnhancedVehicle.diff.posX, tmpY, fS, _txt.txt[j])
+--        renderText(TSX_EnhancedVehicle.diff.posX, tmpY, fS, _txt.txt[j])
         tmpY = tmpY + (fS + tP) * 2
       end
 
@@ -835,6 +871,9 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
 
   -- front diff
   if actionName == "TSX_EnhancedVehicle_FD" then
+    if TSX_EnhancedVehicle.DiffLockSoundId ~= nil and TSX_EnhancedVehicle.soundIsOn then
+      playSample(TSX_EnhancedVehicle.DiffLockSoundId, 1, 0.5, 0, 0, 0);
+    end
     self.vData.want[1] = not self.vData.want[1]
     if self.isClient and not self.isServer then
       self.vData.is[1] = self.vData.want[1]
@@ -844,6 +883,9 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
 
   -- back diff
   if actionName == "TSX_EnhancedVehicle_RD" then
+    if TSX_EnhancedVehicle.DiffLockSoundId ~= nil and TSX_EnhancedVehicle.soundIsOn then
+      playSample(TSX_EnhancedVehicle.DiffLockSoundId, 1, 0.5, 0, 0, 0);
+    end
     self.vData.want[2] = not self.vData.want[2]
     if self.isClient and not self.isServer then
       self.vData.is[2] = self.vData.want[2]
@@ -853,6 +895,9 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
 
   -- wheel drive mode
   if actionName == "TSX_EnhancedVehicle_DM" then
+    if TSX_EnhancedVehicle.DiffLockSoundId ~= nil and TSX_EnhancedVehicle.soundIsOn then
+      playSample(TSX_EnhancedVehicle.DiffLockSoundId, 1, 0.5, 0, 0, 0);
+    end
     self.vData.want[3] = self.vData.want[3] + 1
     if self.vData.want[3] > 1 then
       self.vData.want[3] = 0
