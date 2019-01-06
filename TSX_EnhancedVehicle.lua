@@ -10,7 +10,7 @@
 --
 -- 2019-01-05 - V1.4.3.0
 -- * replaced ugly text display of diff status by a neat graphic
--- + added "clonk" sound when switching diff or drive mode
+-- + added "clonk" sound when switching diff or drive mode (and global option to turn it off)
 -- + added global option to choose whether keybindings are displayed in the help menu or not
 -- + added keybinding (default: KEYPAD *) to reload XML config on the fly
 --
@@ -58,7 +58,7 @@ TSX_EnhancedVehicle.modDirectory  = g_currentModDirectory;
 TSX_EnhancedVehicle.confDirectory = getUserProfileAppPath().. "modsSettings/TSX_EnhancedVehicle/";
 
 -- for differential overlay (not yet in XML config)
-TSX_EnhancedVehicle.diff_overlayZoomFactor  = 15
+TSX_EnhancedVehicle.diff_overlayZoomFactor  = 15    -- higher = smaller
 TSX_EnhancedVehicle.diff_overlayWidth       = 512
 TSX_EnhancedVehicle.diff_overlayHeight      = 1024
 
