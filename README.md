@@ -8,7 +8,7 @@ This is a Mod for Farming Simulator 19. It adds differential locks and wheel dri
 * KeyPad 8 - enable/disable back axle differential lock
 * KeyPad 9 - switch wheel drive mode between 4WD (four wheel drive) or 2WD (two wheel drive)
 * KeyPad / - reset mods HUD elements to its default position. use this if you messed up the config or changed the GUI scale
-* KeyPad * - reload XML config from disk to show modifications immediately without restarting the complete game 
+* KeyPad * - reload XML config from disk to show modifications immediately without restarting the complete game
 
 ## what this mod does
 * when the game starts, it changes all "motorized" and "controllable" vehicles on the map to default settings: wheel drive mode to "all-wheel (4WD)" and deactivation of both differentials

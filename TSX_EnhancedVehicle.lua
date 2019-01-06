@@ -3,50 +3,55 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 05.01.2019
--- @Version: 1.4.3.0
+-- @Date: 06.01.2019
+-- @Version: 1.4.4.0
 
--- CHANGELOG
---
--- 2019-01-05 - V1.4.3.0
--- * replaced ugly text display of diff status by a neat graphic
--- + added "clonk" sound when switching diff or drive mode (and global option to turn it off)
--- + added global option to choose whether keybindings are displayed in the help menu or not
--- + added keybinding (default: KEYPAD *) to reload XML config on the fly
---
--- 2019-01-04 - V1.4.2.0
--- + added "Make Feinstaub great again" feature. vehicles without AdBlue (DEF) will produce more black'n'blue exhaust smoke
--- * gave keyboard binding display in help menu a very low priority to not disturb the display of more important bindings
--- * changed the 2WD behavior again. should not be so wobbly any longer.
--- + moved global variables like fontSize to XML config
---
--- 2019-01-03 - V1.4.1.0
--- * reworked HUD elements positioning. should fix positions once and for all regardless of screen resolutions and GUI scaling (press "KeyPad /" to adept)
--- * workaround (it displays "0") for attachments without a damage model (no spec_wearable)
--- * changed the differential behavior for 2WD. this may cause some wobbly side effects on most vehicles but it's more correct now
---
--- 2019-01-02 - V1.4.0.0
--- * fixed warning about the background overlay image (png -> dds)
--- + config is now stored in XML file
--- + position of HUD elements can be moved or enabled/disabled in XML file
--- * rewrote the key binding/key press stuff
--- + key bindings can now be changed in the options menu
--- + added config reset functionality and keybinding. use this if you messed up the XML or changed the GUI scale
--- + if mod 'keyboardSteerMogli' is detected we move some HUD elements to let them not overlap
--- * moved the rpm and temperature HUD elements inside the speedmeter
--- * don't display not working HUD elements as a multiplayer (and not being host) client
---
--- 2019-01-01 - V1.3.1.1
--- * bugfix for dedicated servers
--- * bugfix for clients not reacting on key press (stupid GIANTS engine again)
---
--- 2019-01-01 - V1.3.1.0
--- + added background overlay to make colored text better readable
---
--- 2018-12-31 - V1.3.0.0
--- * first release
---
--- license: https://creativecommons.org/licenses/by-nc-sa/4.0/
+--[[
+CHANGELOG
+
+2019-01-06 - V1.4.4.0
+* completely rewrote the XML config handling. it's much more flexible now for future usage
+
+2019-01-05 - V1.4.3.0
+* replaced ugly text display of diff status by a neat graphic
++ added "clonk" sound when switching diff or drive mode (and global option to turn it off)
++ added global option to choose whether keybindings are displayed in the help menu or not
++ added keybinding (default: KEYPAD *) to reload XML config on the fly
+
+2019-01-04 - V1.4.2.0
++ added "Make Feinstaub great again" feature. vehicles without AdBlue (DEF) will produce more black'n'blue exhaust smoke
+* gave keyboard binding display in help menu a very low priority to not disturb the display of more important bindings
+* changed the 2WD behavior again. should not be so wobbly any longer.
++ moved global variables like fontSize to XML config
+
+2019-01-03 - V1.4.1.0
+* reworked HUD elements positioning. should fix positions once and for all regardless of screen resolutions and GUI scaling (press "KeyPad /" to adept)
+* workaround (it displays "0") for attachments without a damage model (no spec_wearable)
+* changed the differential behavior for 2WD. this may cause some wobbly side effects on most vehicles but it's more correct now
+
+2019-01-02 - V1.4.0.0
+* fixed warning about the background overlay image (png -> dds)
++ config is now stored in XML file
++ position of HUD elements can be moved or enabled/disabled in XML file
+* rewrote the key binding/key press stuff
++ key bindings can now be changed in the options menu
++ added config reset functionality and keybinding. use this if you messed up the XML or changed the GUI scale
++ if mod 'keyboardSteerMogli' is detected we move some HUD elements to let them not overlap
+* moved the rpm and temperature HUD elements inside the speedmeter
+* don't display not working HUD elements as a multiplayer (and not being host) client
+
+2019-01-01 - V1.3.1.1
+* bugfix for dedicated servers
+* bugfix for clients not reacting on key press (stupid GIANTS engine again)
+
+2019-01-01 - V1.3.1.0
++ added background overlay to make colored text better readable
+
+2018-12-31 - V1.3.0.0
+* first release
+
+license: https://creativecommons.org/licenses/by-nc-sa/4.0/
+]]--
 
 debug = 0 -- 0=0ff, 1=some, 2=everything, 3=madness
 local myName = "TSX_EnhancedVehicle"
@@ -57,11 +62,6 @@ TSX_EnhancedVehicle = {}
 TSX_EnhancedVehicle.modDirectory  = g_currentModDirectory;
 TSX_EnhancedVehicle.confDirectory = getUserProfileAppPath().. "modsSettings/TSX_EnhancedVehicle/";
 
--- for differential overlay (not yet in XML config)
-TSX_EnhancedVehicle.diff_overlayZoomFactor  = 15    -- higher = smaller
-TSX_EnhancedVehicle.diff_overlayWidth       = 512
-TSX_EnhancedVehicle.diff_overlayHeight      = 1024
-
 -- for debugging purpose
 TSX_dbg = false
 TSX_dbg1 = 0
@@ -69,6 +69,8 @@ TSX_dbg2 = 0
 TSX_dbg3 = 0
 
 -- some global stuff - DONT touch
+TSX_EnhancedVehicle.diff_overlayWidth  = 512
+TSX_EnhancedVehicle.diff_overlayHeight = 1024
 TSX_EnhancedVehicle.uiScale = 1
 if g_gameSettings.uiScale ~= nil then
   if debug > 1 then print("-> uiScale: "..TSX_EnhancedVehicle.uiScale) end
@@ -106,265 +108,6 @@ loadSample(TSX_EnhancedVehicle.DiffLockSoundId, file, false);
 
 -- #############################################################################
 
-function TSX_EnhancedVehicle:readConfig()
-  if debug > 0 then print("-> " .. myName .. ": readConfig ") end
-
-  -- skip on dedicated servers
-  if g_dedicatedServerInfo ~= nil then
-    return
-  end
-
-  local v1, v2, v3, v4
-
-  local file = TSX_EnhancedVehicle.confDirectory..myName..".xml"
-  local xml
-  if not fileExists(file) then
-    TSX_EnhancedVehicle:resetConfig()
-    TSX_EnhancedVehicle:writeConfig()
-  else
-    -- load existing XMF file
-    xml = loadXMLFile("TSX_EnhancedVehicle_XML", file, "TSX_EnhancedVehicleSettings");
-
-    -- HUD stuff
-    for _, section in ipairs(TSX_EnhancedVehicle.sections) do
-      group = "hud." .. section
-      groupNameTag = string.format("TSX_EnhancedVehicleSettings.%s(%d)", group, 0)
-      v1 =  getXMLBool(xml, groupNameTag.. "#enabled")
-      v2 = getXMLFloat(xml, groupNameTag.. "#posX")
-      v3 = getXMLFloat(xml, groupNameTag.. "#posY")
-      if v1 == nil or v2 == nil or v3 == nil then
-        if debug > 1 then print("--> can't find values for '"..section.."'. Resetting config.") end
-        TSX_EnhancedVehicle:resetConfig()
-      else
-        if debug > 1 then print("--> found values for '"..section.."'. v1: "..bool_to_number(v1)..", v2: "..v2..", v3: "..v3) end
-        TSX_EnhancedVehicle[section] = {}
-        TSX_EnhancedVehicle[section].enabled = v1
-        TSX_EnhancedVehicle[section].posX = v2
-        TSX_EnhancedVehicle[section].posY = v3
-      end
-    end
-
-    -- globals
-    group = "global"
-    groupNameTag = string.format("TSX_EnhancedVehicleSettings.%s(%d)", group, 0)
-    v1 = getXMLFloat(xml, groupNameTag.. "#fontSize")
-    v2 = getXMLFloat(xml, groupNameTag.. "#textPadding")
-    v3 = getXMLFloat(xml, groupNameTag.. "#overlayBorder")
-    v4 = getXMLFloat(xml, groupNameTag.. "#overlayTransparancy")
-    v5 = getXMLBool(xml,  groupNameTag.. "#showKeysInHelpMenu")
-    v6 = getXMLBool(xml,  groupNameTag.. "#soundIsOn")
-    if v1 == nil or v2 == nil or v3 == nil or v4 == nil or v5 == nil or v6 == nil then
-      if debug > 1 then print("--> can't find values for '"..group.."'. Resetting config.") end
-      TSX_EnhancedVehicle:resetConfig()
-    else
-      if debug > 1 then print("--> found values for '"..group.."'. v1: "..v1..", v2: "..v2..", v3: "..v3..", v4: "..v4..", v5: "..bool_to_number(v5)..", v6: "..bool_to_number(v6)) end
-      TSX_EnhancedVehicle.fontSize            = v1
-      TSX_EnhancedVehicle.textPadding         = v2
-      TSX_EnhancedVehicle.overlayBorder       = v3
-      TSX_EnhancedVehicle.overlayTransparancy = v4
-      TSX_EnhancedVehicle.showKeysInHelpMenu  = v5
-      TSX_EnhancedVehicle.soundIsOn           = v6
-    end
-
-    -- Feinstaub
-    group = "feinstaub"
-    groupNameTag = string.format("TSX_EnhancedVehicleSettings.%s(%d)", group, 0)
-    v1 =  getXMLBool(xml,  groupNameTag.. "#enabled")
-    v2 = getXMLString(xml, groupNameTag.. "#min")
-    v3 = getXMLString(xml, groupNameTag.. "#max")
-    if v1 == nil or v2 == nil or v3 == nil then
-      if debug > 1 then print("--> can't find values for '"..group.."'. Resetting config.") end
-      TSX_EnhancedVehicle:resetConfig()
-    else
-      if debug > 1 then print("--> found values for '"..group.."'. v1: "..bool_to_number(v1)..", v2: "..v2..", v3: "..v3) end
-      TSX_EnhancedVehicle.feinstaub = {}
-      TSX_EnhancedVehicle.feinstaub.enabled = v1
-      TSX_EnhancedVehicle.feinstaub.min = StringUtil.splitString(",", v2)
-      TSX_EnhancedVehicle.feinstaub.max = StringUtil.splitString(",", v3)
-      -- convert string to float to avoid later shader errors
-      for _i=1,4 do
-        TSX_EnhancedVehicle.feinstaub.min[_i] = tonumber(TSX_EnhancedVehicle.feinstaub.min[_i])
-        TSX_EnhancedVehicle.feinstaub.max[_i] = tonumber(TSX_EnhancedVehicle.feinstaub.max[_i])
-      end
-    end
-
-  end
-end
-
--- #############################################################################
-
-function TSX_EnhancedVehicle:writeConfig()
-  if debug > 0 then print("-> " .. myName .. ": writeConfig ") end
-
-  -- skip on dedicated servers
-  if g_dedicatedServerInfo ~= nil then
-    return
-  end
-
-  createFolder(getUserProfileAppPath().. "modsSettings/");
-  createFolder(TSX_EnhancedVehicle.confDirectory);
-
-  local file = TSX_EnhancedVehicle.confDirectory..myName..".xml"
-  local xml
-  local groupNameTag
-  local group
-  xml = createXMLFile("TSX_EnhancedVehicle_XML", file, "TSX_EnhancedVehicleSettings")
-
-  for _, section in ipairs(TSX_EnhancedVehicle.sections) do
-    group = "hud." .. section
-    groupNameTag = string.format("TSX_EnhancedVehicleSettings.%s(%d)", group, 0)
-    setXMLBool(xml,  groupNameTag .. "#enabled", TSX_EnhancedVehicle[section].enabled)
-    setXMLFloat(xml, groupNameTag .. "#posX",    TSX_EnhancedVehicle[section].posX)
-    setXMLFloat(xml, groupNameTag .. "#posY",    TSX_EnhancedVehicle[section].posY)
-    if debug > 1 then print("--> wrote values for '"..section.."'. v1: "..bool_to_number(TSX_EnhancedVehicle[section].enabled)..", v2: "..TSX_EnhancedVehicle[section].posX..", v3: "..TSX_EnhancedVehicle[section].posY) end
-  end
-
-  -- globals
-  group = "global"
-  groupNameTag = string.format("TSX_EnhancedVehicleSettings.%s(%d)", group, 0)
-  setXMLFloat(xml, groupNameTag.. "#fontSize",            TSX_EnhancedVehicle.fontSize)
-  setXMLFloat(xml, groupNameTag.. "#textPadding",         TSX_EnhancedVehicle.textPadding)
-  setXMLFloat(xml, groupNameTag.. "#overlayBorder",       TSX_EnhancedVehicle.overlayBorder)
-  setXMLFloat(xml, groupNameTag.. "#overlayTransparancy", TSX_EnhancedVehicle.overlayTransparancy)
-  setXMLBool(xml,  groupNameTag.. "#showKeysInHelpMenu",  TSX_EnhancedVehicle.showKeysInHelpMenu)
-  setXMLBool(xml,  groupNameTag.. "#soundIsOn",           TSX_EnhancedVehicle.soundIsOn)
-  if debug > 1 then print("--> wrote values for '"..group.."'") end
-
-  -- Feinstaub
-  group = "feinstaub"
-  groupNameTag = string.format("TSX_EnhancedVehicleSettings.%s(%d)", group, 0)
-  setXMLBool(xml,   groupNameTag .. "#enabled", TSX_EnhancedVehicle.feinstaub.enabled)
-  setXMLString(xml, groupNameTag .. "#min",     table.concat(TSX_EnhancedVehicle.feinstaub.min, ","))
-  setXMLString(xml, groupNameTag .. "#max",     table.concat(TSX_EnhancedVehicle.feinstaub.max, ","))
-  if debug > 1 then print("--> wrote values for '"..group.."'. v1: "..bool_to_number(TSX_EnhancedVehicle.feinstaub.enabled)..", v2: "..table.concat(TSX_EnhancedVehicle.feinstaub.min, ",")..", v3: "..table.concat(TSX_EnhancedVehicle.feinstaub.max, ",")) end
-
-  saveXMLFile(xml)
-end
-
--- #############################################################################
-
-function TSX_EnhancedVehicle:resetConfig()
-  if debug > 0 then print("-> " .. myName .. ": resetConfig ") end
-
-  if g_gameSettings.uiScale ~= nil then
-    TSX_EnhancedVehicle.uiScale = g_gameSettings.uiScale
---    local screenWidth, screenHeight = getScreenModeInfo(getScreenMode());
-    if debug > 1 then print("-> uiScale: "..TSX_EnhancedVehicle.uiScale) end
-  end
-
-  -- to make life easier
-  local baseX = g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterX
-  local baseY = g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterY
-
-  -- support for keyboardSteer
-  ksm = 0
-  if g_modIsLoaded.FS19_KeyboardSteer ~= nil then
-    ksm = 0.07 * TSX_EnhancedVehicle.uiScale
-    if debug > 1 then print("-> found keyboardSteerMogli. Adjusting some HUD elements") end
-  end
-
-  -- globals
-  if TSX_EnhancedVehicle.fontSize == nil then            TSX_EnhancedVehicle.fontSize            = 0.01  end
-  if TSX_EnhancedVehicle.textPadding == nil then         TSX_EnhancedVehicle.textPadding         = 0.001 end
-  if TSX_EnhancedVehicle.overlayBorder == nil then       TSX_EnhancedVehicle.overlayBorder       = 0.003 end
-  if TSX_EnhancedVehicle.overlayTransparancy == nil then TSX_EnhancedVehicle.overlayTransparancy = 0.75  end
-  if TSX_EnhancedVehicle.showKeysInHelpMenu == nil then  TSX_EnhancedVehicle.showKeysInHelpMenu  = true  end
-  if TSX_EnhancedVehicle.soundIsOn == nil then           TSX_EnhancedVehicle.soundIsOn           = true  end
-
-  -- fuel
-  if TSX_EnhancedVehicle.fuel == nil then
-    TSX_EnhancedVehicle.fuel = {}
-    TSX_EnhancedVehicle.fuel.enabled = false
-    TSX_EnhancedVehicle.fuel.posX = 0
-    TSX_EnhancedVehicle.fuel.posY = 0
-    if g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement ~= nil then
-      TSX_EnhancedVehicle.fuel.enabled = true
-      TSX_EnhancedVehicle.fuel.posX = baseX + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusX / 2.3)
-      TSX_EnhancedVehicle.fuel.posY = baseY + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusY * 1.8) + ksm
-      if debug > 1 then print("--> reset values for 'fuel'. v1: "..bool_to_number(TSX_EnhancedVehicle.fuel.enabled)..", v2: "..TSX_EnhancedVehicle.fuel.posX..", v3: "..TSX_EnhancedVehicle.fuel.posY) end
-    end
-  end
-  -- damage
-  if TSX_EnhancedVehicle.dmg == nil then
-    TSX_EnhancedVehicle.dmg = {}
-    TSX_EnhancedVehicle.dmg.enabled = false
-    TSX_EnhancedVehicle.dmg.posX = 0
-    TSX_EnhancedVehicle.dmg.posY = 0
-    if g_currentMission.inGameMenu.hud.speedMeter.damageGaugeIconElement ~= nil then
-      TSX_EnhancedVehicle.dmg.enabled = true
-      TSX_EnhancedVehicle.dmg.posX = baseX - (g_currentMission.inGameMenu.hud.speedMeter.damageGaugeRadiusX / 2.3)
-      TSX_EnhancedVehicle.dmg.posY = baseY + (g_currentMission.inGameMenu.hud.speedMeter.damageGaugeRadiusY * 1.8) + ksm
-      if debug > 1 then print("--> reset values for 'dmg'. v1: "..bool_to_number(TSX_EnhancedVehicle.dmg.enabled)..", v2: "..TSX_EnhancedVehicle.dmg.posX..", v3: "..TSX_EnhancedVehicle.dmg.posY) end
-    end
-  end
-  -- misc
-  if TSX_EnhancedVehicle.misc == nil then
-    TSX_EnhancedVehicle.misc = {}
-    TSX_EnhancedVehicle.misc.enabled = false
-    TSX_EnhancedVehicle.misc.posX = 0
-    TSX_EnhancedVehicle.misc.posY = 0
-    if g_currentMission.inGameMenu.hud.speedMeter.operatingTimeElement ~= nil then
-      TSX_EnhancedVehicle.misc.enabled = true
-      TSX_EnhancedVehicle.misc.posX = baseX
-      TSX_EnhancedVehicle.misc.posY = TSX_EnhancedVehicle.overlayBorder * 1
-      if debug > 1 then print("--> reset values for 'misc'. v1: "..bool_to_number(TSX_EnhancedVehicle.misc.enabled)..", v2: "..TSX_EnhancedVehicle.misc.posX..", v3: "..TSX_EnhancedVehicle.misc.posY) end
-    end
-  end
-  -- rpm
-  if TSX_EnhancedVehicle.rpm == nil then
-    TSX_EnhancedVehicle.rpm = {}
-    TSX_EnhancedVehicle.rpm.enabled = false
-    TSX_EnhancedVehicle.rpm.posX = 0
-    TSX_EnhancedVehicle.rpm.posY = 0
-    if g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterX ~= nil then
-      TSX_EnhancedVehicle.rpm.enabled = true
-      TSX_EnhancedVehicle.rpm.posX = baseX - (g_currentMission.inGameMenu.hud.speedMeter.damageGaugeRadiusX / 1.8)
-      TSX_EnhancedVehicle.rpm.posY = baseY
-      if debug > 1 then print("--> reset values for 'rpm'. v1: "..bool_to_number(TSX_EnhancedVehicle.rpm.enabled)..", v2: "..TSX_EnhancedVehicle.rpm.posX..", v3: "..TSX_EnhancedVehicle.rpm.posY) end
-    end
-  end
-  -- temperature
-  if TSX_EnhancedVehicle.temp == nil then
-    TSX_EnhancedVehicle.temp = {}
-    TSX_EnhancedVehicle.temp.enabled = false
-    TSX_EnhancedVehicle.temp.posX = 0
-    TSX_EnhancedVehicle.temp.posY = 0
-    if g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterX ~= nil then
-      TSX_EnhancedVehicle.temp.enabled = true
-      TSX_EnhancedVehicle.temp.posX = baseX + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusX / 1.8)
-      TSX_EnhancedVehicle.temp.posY = baseY
-      if debug > 1 then print("--> reset values for 'temp'. v1: "..bool_to_number(TSX_EnhancedVehicle.temp.enabled)..", v2: "..TSX_EnhancedVehicle.temp.posX..", v3: "..TSX_EnhancedVehicle.temp.posY) end
-    end
-  end
-  -- diff
-  if TSX_EnhancedVehicle.diff == nil then
-    TSX_EnhancedVehicle.diff = {}
-    TSX_EnhancedVehicle.diff.enabled = false
-    TSX_EnhancedVehicle.diff.posX = 0
-    TSX_EnhancedVehicle.diff.posY = 0
-    if g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement ~= nil then
-      TSX_EnhancedVehicle.diff.enabled = true
-      local _w, _h = getNormalizedScreenValues(TSX_EnhancedVehicle.diff_overlayWidth / TSX_EnhancedVehicle.diff_overlayZoomFactor * TSX_EnhancedVehicle.uiScale, TSX_EnhancedVehicle.diff_overlayHeight / TSX_EnhancedVehicle.diff_overlayZoomFactor * TSX_EnhancedVehicle.uiScale)
-      TSX_EnhancedVehicle.diff.posX = baseX - (_w / 2)
-      TSX_EnhancedVehicle.diff.posY = baseY + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusY * 1.8) + ksm
-      if debug > 1 then print("--> reset values for 'diff'. v1: "..bool_to_number(TSX_EnhancedVehicle.diff.enabled)..", v2: "..TSX_EnhancedVehicle.diff.posX..", v3: "..TSX_EnhancedVehicle.diff.posY) end
-    end
-  end
-
-  -- Feinstaub
-  if TSX_EnhancedVehicle.feinstaub == nil then
-    TSX_EnhancedVehicle.feinstaub = {}
-    TSX_EnhancedVehicle.feinstaub.enabled = true
-    TSX_EnhancedVehicle.feinstaub.min = { 0.5, 0.5,  0.5, 1.5 }
-    TSX_EnhancedVehicle.feinstaub.max = {   0,   0, 0.04,   5 }
-    if debug > 1 then print("--> reset values for 'feinstaub'. v1: "..bool_to_number(TSX_EnhancedVehicle.feinstaub.enabled)..", v2: "..table.concat(TSX_EnhancedVehicle.feinstaub.min, ",")..", v3: "..table.concat(TSX_EnhancedVehicle.feinstaub.max, ",")) end
-  end
-
-  TSX_EnhancedVehicle:writeConfig()
-end
-
--- #############################################################################
-
 function TSX_EnhancedVehicle.prerequisitesPresent(specializations)
   if debug > 1 then print("-> " .. myName .. ": prerequisites ") end
 
@@ -383,9 +126,139 @@ end
 
 -- #############################################################################
 
+function TSX_EnhancedVehicle:activateConfig()
+  -- here we will "move" our config from the libConfig internal storage to the variables we actually use
+
+  -- globals
+  TSX_EnhancedVehicle.fontSize            = lC:getConfigValue("global.text", "fontSize")
+  TSX_EnhancedVehicle.textPadding         = lC:getConfigValue("global.text", "textPadding")
+  TSX_EnhancedVehicle.overlayBorder       = lC:getConfigValue("global.text", "overlayBorder")
+  TSX_EnhancedVehicle.overlayTransparancy = lC:getConfigValue("global.text", "overlayTransparancy")
+  TSX_EnhancedVehicle.showKeysInHelpMenu  = lC:getConfigValue("global.misc", "showKeysInHelpMenu")
+  TSX_EnhancedVehicle.soundIsOn           = lC:getConfigValue("global.misc", "soundIsOn")
+
+  -- HUD stuff
+  for _, section in pairs(TSX_EnhancedVehicle.sections) do
+    TSX_EnhancedVehicle[section] = {}
+    TSX_EnhancedVehicle[section].enabled = lC:getConfigValue("hud."..section, "enabled")
+    TSX_EnhancedVehicle[section].posX    = lC:getConfigValue("hud."..section, "posX")
+    TSX_EnhancedVehicle[section].posY    = lC:getConfigValue("hud."..section, "posY")
+  end
+  TSX_EnhancedVehicle.diff.zoomFactor = lC:getConfigValue("hud.diff", "zoomFactor")
+
+  -- Feinstaub
+  TSX_EnhancedVehicle.feinstaub = {}
+  TSX_EnhancedVehicle.feinstaub.enabled = lC:getConfigValue("feinstaub", "enabled")
+  TSX_EnhancedVehicle.feinstaub.min     = lC:getConfigValue("feinstaub", "min")
+  TSX_EnhancedVehicle.feinstaub.max     = lC:getConfigValue("feinstaub", "max")
+  -- convert string to float to avoid later shader errors
+  for _i=1,4 do
+    TSX_EnhancedVehicle.feinstaub.min[_i] = tonumber(TSX_EnhancedVehicle.feinstaub.min[_i])
+    TSX_EnhancedVehicle.feinstaub.max[_i] = tonumber(TSX_EnhancedVehicle.feinstaub.max[_i])
+  end
+end
+
+-- #############################################################################
+
+function TSX_EnhancedVehicle:resetConfig()
+  if debug > 0 then print("-> " .. myName .. ": resetConfig ") end
+
+  local _x, _y
+
+  if g_gameSettings.uiScale ~= nil then
+    TSX_EnhancedVehicle.uiScale = g_gameSettings.uiScale
+--    local screenWidth, screenHeight = getScreenModeInfo(getScreenMode());
+    if debug > 1 then print("-> uiScale: "..TSX_EnhancedVehicle.uiScale) end
+  end
+
+  -- to make life easier
+  local baseX = g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterX
+  local baseY = g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterY
+
+  -- support for keyboardSteer
+  ksm = 0
+  if g_modIsLoaded.FS19_KeyboardSteer ~= nil then
+    ksm = 0.07 * TSX_EnhancedVehicle.uiScale
+    if debug > 1 then print("-> found keyboardSteerMogli. Adjusting some HUD elements") end
+  end
+
+  -- start fresh
+  lC:clearConfig()
+
+  -- globals
+  lC:addConfigValue("global.text", "fontSize", "float",            0.01)
+  lC:addConfigValue("global.text", "textPadding", "float",         0.001)
+  lC:addConfigValue("global.text", "overlayBorder", "float",       0.003)
+  lC:addConfigValue("global.text", "overlayTransparancy", "float", 0.75)
+  lC:addConfigValue("global.misc", "showKeysInHelpMenu", "bool",   true)
+  lC:addConfigValue("global.misc", "soundIsOn", "bool",            true)
+
+  -- fuel
+  if g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement ~= nil then
+    _x = baseX + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusX / 2.3)
+    _y = baseY + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusY * 1.8) + ksm
+  end
+  lC:addConfigValue("hud.fuel", "enabled", "bool", true)
+  lC:addConfigValue("hud.fuel", "posX", "float",   _x or 0)
+  lC:addConfigValue("hud.fuel", "posY", "float",   _y or 0)
+
+  -- dmg
+  if g_currentMission.inGameMenu.hud.speedMeter.damageGaugeIconElement ~= nil then
+    _x = baseX - (g_currentMission.inGameMenu.hud.speedMeter.damageGaugeRadiusX / 2.3)
+    _y = baseY + (g_currentMission.inGameMenu.hud.speedMeter.damageGaugeRadiusY * 1.8) + ksm
+  end
+  lC:addConfigValue("hud.dmg", "enabled", "bool", true)
+  lC:addConfigValue("hud.dmg", "posX", "float",   _x or 0)
+  lC:addConfigValue("hud.dmg", "posY", "float",   _y or 0)
+
+  -- misc
+  if g_currentMission.inGameMenu.hud.speedMeter.operatingTimeElement ~= nil then
+    _x = baseX
+    _y = lC:getConfigValue("global.text", "overlayBorder") * 1
+  end
+  lC:addConfigValue("hud.misc", "enabled", "bool", true)
+  lC:addConfigValue("hud.misc", "posX", "float",   _x or 0)
+  lC:addConfigValue("hud.misc", "posY", "float",   _y or 0)
+
+  -- rpm
+  if g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterX ~= nil then
+    _x = baseX - (g_currentMission.inGameMenu.hud.speedMeter.damageGaugeRadiusX / 1.8)
+    _y = baseY
+  end
+  lC:addConfigValue("hud.rpm", "enabled", "bool", true)
+  lC:addConfigValue("hud.rpm", "posX", "float",   _x or 0)
+  lC:addConfigValue("hud.rpm", "posY", "float",   _y or 0)
+
+  -- temp
+  if g_currentMission.inGameMenu.hud.speedMeter.gaugeCenterX ~= nil then
+    _x = baseX + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusX / 1.8)
+    _y = baseY
+  end
+  lC:addConfigValue("hud.temp", "enabled", "bool", true)
+  lC:addConfigValue("hud.temp", "posX", "float",   _x or 0)
+  lC:addConfigValue("hud.temp", "posY", "float",   _y or 0)
+
+  -- diff
+  lC:addConfigValue("hud.diff", "zoomFactor", "float", 15)
+  if g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement ~= nil then
+    local _w, _h = getNormalizedScreenValues(TSX_EnhancedVehicle.diff_overlayWidth / lC:getConfigValue("hud.diff", "zoomFactor") * TSX_EnhancedVehicle.uiScale, TSX_EnhancedVehicle.diff_overlayHeight / lC:getConfigValue("hud.diff", "zoomFactor") * TSX_EnhancedVehicle.uiScale)
+    _x = baseX - (_w / 2)
+    _y = baseY + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusY * 1.8) + ksm
+  end
+  lC:addConfigValue("hud.diff", "enabled", "bool", true)
+  lC:addConfigValue("hud.diff", "posX", "float",   _x or 0)
+  lC:addConfigValue("hud.diff", "posY", "float",   _y or 0)
+
+  -- Feinstaub
+  lC:addConfigValue("feinstaub", "enabled", "bool", true)
+  lC:addConfigValue("feinstaub", "min", "table",    { 0.5, 0.5,  0.5, 1.5 })
+  lC:addConfigValue("feinstaub", "max", "table",    {   0,   0, 0.04,   5 })
+end
+
+-- #############################################################################
+
 function TSX_EnhancedVehicle:onLoad(savegame)
   if debug > 1 then print("-> " .. myName .. ": onLoad" .. mySelf(self)) end
-
 end
 
 -- #############################################################################
@@ -418,7 +291,6 @@ function TSX_EnhancedVehicle:onPostLoad(savegame)
       if debug > 0 then print("--> setup of differentials done" .. mySelf(self)) end
     end
   end
-
 end
 
 -- #############################################################################
@@ -472,7 +344,6 @@ end
 
 function TSX_EnhancedVehicle:onUpdateTick(dt)
   if debug > 2 then print("-> " .. myName .. ": onUpdateTick " .. dt .. mySelf(self)) end
-
 end
 
 -- #############################################################################
@@ -687,62 +558,35 @@ function TSX_EnhancedVehicle:onDraw()
     if self.spec_motorized ~= nil and TSX_EnhancedVehicle.diff.enabled then
       -- prepare text
       _txt = {}
-      _txt.txt = { "open", "---", "open" }
-      _txt.bold = { false, false, false }
-      _txt.color = { "green", "white", "green" }
+      _txt.color = { "green", "green", "gray" }
       if self.vData ~= nil then
         if self.vData.is[1] then
-          _txt.txt[1]   = "lock"
-          _txt.bold[1]  = true
           _txt.color[1] = "red"
         end
         if self.vData.is[2] then
-          _txt.txt[3]   = "lock"
-          _txt.bold[3]  = true
-          _txt.color[3] = "red"
+          _txt.color[2] = "red"
         end
         if self.vData.is[3] == 0 then
-          _txt.txt[2]   = "2WD"
-          _txt.bold[2]  = false
-          _txt.color[2] = "gray"
+          _txt.color[3] = "gray"
         end
         if self.vData.is[3] == 1 then
-          _txt.txt[2]   = "4WD"
-          _txt.bold[2]  = true
-          _txt.color[2] = "yellow"
+          _txt.color[3] = "yellow"
         end
         if self.vData.is[3] == 2 then
-          _txt.txt[2]   = "FWD"
-          _txt.bold[2]  = false
-          _txt.color[2] = "gray"
+          _txt.color[3] = "gray"
         end
       end
 
       -- render overlay
-      w, h = getNormalizedScreenValues(TSX_EnhancedVehicle.diff_overlayWidth / TSX_EnhancedVehicle.diff_overlayZoomFactor * TSX_EnhancedVehicle.uiScale, TSX_EnhancedVehicle.diff_overlayHeight / TSX_EnhancedVehicle.diff_overlayZoomFactor * TSX_EnhancedVehicle.uiScale)
+      w, h = getNormalizedScreenValues(TSX_EnhancedVehicle.diff_overlayWidth / TSX_EnhancedVehicle.diff.zoomFactor * TSX_EnhancedVehicle.uiScale, TSX_EnhancedVehicle.diff_overlayHeight / TSX_EnhancedVehicle.diff.zoomFactor * TSX_EnhancedVehicle.uiScale)
       setOverlayColor(TSX_EnhancedVehicle.overlay["diff_front"], unpack(TSX_EnhancedVehicle.color[_txt.color[1]]))
-      setOverlayColor(TSX_EnhancedVehicle.overlay["diff_back"],  unpack(TSX_EnhancedVehicle.color[_txt.color[3]]))
-      setOverlayColor(TSX_EnhancedVehicle.overlay["diff_dm"],    unpack(TSX_EnhancedVehicle.color[_txt.color[2]]))
+      setOverlayColor(TSX_EnhancedVehicle.overlay["diff_back"],  unpack(TSX_EnhancedVehicle.color[_txt.color[2]]))
+      setOverlayColor(TSX_EnhancedVehicle.overlay["diff_dm"],    unpack(TSX_EnhancedVehicle.color[_txt.color[3]]))
 
       renderOverlay(TSX_EnhancedVehicle.overlay["diff_bg"],    TSX_EnhancedVehicle.diff.posX, TSX_EnhancedVehicle.diff.posY, w, h)
       renderOverlay(TSX_EnhancedVehicle.overlay["diff_front"], TSX_EnhancedVehicle.diff.posX, TSX_EnhancedVehicle.diff.posY, w, h)
       renderOverlay(TSX_EnhancedVehicle.overlay["diff_back"],  TSX_EnhancedVehicle.diff.posX, TSX_EnhancedVehicle.diff.posY, w, h)
       renderOverlay(TSX_EnhancedVehicle.overlay["diff_dm"],    TSX_EnhancedVehicle.diff.posX, TSX_EnhancedVehicle.diff.posY, w, h)
-
-      -- render text
-      setTextColor(1,1,1,1);
-      setTextAlignment(RenderText.ALIGN_CENTER);
-      setTextVerticalAlignment(RenderText.VERTICAL_ALIGN_BOTTOM)
-      setTextBold(false)
---      renderText(TSX_EnhancedVehicle.diff.posX, TSX_EnhancedVehicle.diff.posY, fS, "VL-           -VR\n|\n\n|\nHL-           -HR")
-      tmpY = TSX_EnhancedVehicle.diff.posY
-      for j=3, 1, -1 do
-        setTextBold(_txt.bold[j])
-        setTextColor(unpack(TSX_EnhancedVehicle.color[_txt.color[j]]))
---        renderText(TSX_EnhancedVehicle.diff.posX, tmpY, fS, _txt.txt[j])
-        tmpY = tmpY + (fS + tP) * 2
-      end
-
     end
 
     -- reset text stuff to "defaults"
@@ -802,6 +646,7 @@ end
 function TSX_EnhancedVehicle:onEnterVehicle()
   if debug > 1 then print("-> " .. myName .. ": onEnterVehicle" .. mySelf(self)) end
 
+  -- inject feinstaub
   if self.spec_motorized  ~= nil and self.spec_fillUnit ~= nil and TSX_EnhancedVehicle.feinstaub.enabled then
     local adblue = false
     for _, fillUnit in ipairs(self.spec_fillUnit.fillUnits) do
@@ -910,15 +755,15 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
 
   -- reset config
   if actionName == "TSX_EnhancedVehicle_RESET" then
-    for _, section in ipairs(TSX_EnhancedVehicle.sections) do
-      TSX_EnhancedVehicle[section] = nil
-    end
     TSX_EnhancedVehicle:resetConfig()
+    lC:writeConfig()
+    TSX_EnhancedVehicle:activateConfig()
   end
 
   -- reload config
   if actionName == "TSX_EnhancedVehicle_RELOAD" then
-    TSX_EnhancedVehicle:readConfig()
+    lC:readConfig()
+    TSX_EnhancedVehicle:activateConfig()
   end
 
   -- debug stuff

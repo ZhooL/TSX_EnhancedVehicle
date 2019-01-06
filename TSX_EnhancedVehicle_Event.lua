@@ -4,7 +4,7 @@
 -- Author: ZhooL
 -- email: ls19@dark-world.de
 -- @Date: 02.01.2019
--- @Version: 1.4.0.0 
+-- @Version: 1.4.0.0
 
 local myName = "TSX_EnhancedVehicle_Event"
 
@@ -18,7 +18,7 @@ InitEventClass(TSX_EnhancedVehicle_Event, "TSX_EnhancedVehicle_Event")
 
 function TSX_EnhancedVehicle_Event:emptyNew()
   if debug > 2 then print("-> " .. myName .. ": emptyNew()") end
-  
+
   local self = Event:new(TSX_EnhancedVehicle_Event_mt)
   self.className = "TSX_EnhancedVehicle_Event"
   return self
@@ -34,7 +34,7 @@ function TSX_EnhancedVehicle_Event:new(vehicle, diff_front, diff_back, wd_mode)
   self.vehicle.vData.want[1] = diff_front
   self.vehicle.vData.want[2] = diff_back
   self.vehicle.vData.want[3] = wd_mode
- 
+
   return self
 end
 
@@ -42,10 +42,10 @@ end
 
 function TSX_EnhancedVehicle_Event:readStream(streamId, connection)
   if debug > 1 then print("-> " .. myName .. ": readStream() - " .. streamId) end
-  
+
   self.vehicle               = NetworkUtil.readNodeObject(streamId);
-  self.vehicle.vData.want[1] = streamReadBool(streamId);  
-  self.vehicle.vData.want[2] = streamReadBool(streamId);  
+  self.vehicle.vData.want[1] = streamReadBool(streamId);
+  self.vehicle.vData.want[2] = streamReadBool(streamId);
   self.vehicle.vData.want[3] = streamReadInt32(streamId);
 
   if not connection:getIsServer() then
@@ -57,7 +57,7 @@ function TSX_EnhancedVehicle_Event:readStream(streamId, connection)
     self.vehicle.vData.is[2] = self.vehicle.vData.want[2]
     self.vehicle.vData.is[3] = self.vehicle.vData.want[3]
   end
-      
+
   if debug > 1 then print("--> " .. self.vehicle.rootNode .. "/(" .. bool_to_number(self.vehicle.vData.is[1]).."|"..bool_to_number(self.vehicle.vData.want[1]) .. ")/(" .. bool_to_number(self.vehicle.vData.is[2]).."|"..bool_to_number(self.vehicle.vData.want[2]) .. ")/(" .. bool_to_number(self.vehicle.vData.is[3]).."|"..self.vehicle.vData.want[3]..")") end
 --  print(DebugUtil.printTableRecursively(self.vehicle.vData, 0, 0, 2))
 end
