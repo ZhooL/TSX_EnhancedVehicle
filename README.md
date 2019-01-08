@@ -4,6 +4,8 @@ This is a Mod for Farming Simulator 19. It adds differential locks and wheel dri
 *(c) 2018-2019 by ZhooL. Be so kind to credit me when using this mod or the source code (or parts of it) somewhere.*
 
 ## default key bindings
+* Space - (shuttle shift) switch driving direction
+* lCTRL+Space - turn shuttle shift functionality on/off
 * KeyPad 7 - enable/disable front axle differential lock
 * KeyPad 8 - enable/disable back axle differential lock
 * KeyPad 9 - switch wheel drive mode between 4WD (four wheel drive) or 2WD (two wheel drive)
@@ -12,6 +14,8 @@ This is a Mod for Farming Simulator 19. It adds differential locks and wheel dri
 
 ## what this mod does
 * when the game starts, it changes all "motorized" and "controllable" vehicles on the map to default settings: wheel drive mode to "all-wheel (4WD)" and deactivation of both differentials
+* add a shuttle shift functionality. if enabled you have to select a driving direction and vehicle will only drive in that direction if acceleration key is pressed
+* on HUD it displays a indicator display for shuttle shift status
 * on HUD it displays damage values in % for controlled vehicle and all its attachments
 * on HUD it displays fuel fill level for Diesel and AdBlue and the current fuel usage rate<br>
 **NOTE: in multiplayer games all clients, except the master, won't display fuel usage rate due to GIANTS Engine fail**

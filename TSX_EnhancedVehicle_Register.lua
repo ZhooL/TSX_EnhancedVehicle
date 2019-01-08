@@ -3,13 +3,18 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 06.01.2019
--- @Version: 1.4.4.0
+-- @Date: 08.01.2019
+-- @Version: 1.5.0.0
 
 -- #############################################################################
 
 source(Utils.getFilename("TSX_EnhancedVehicle.lua", g_currentModDirectory))
 source(Utils.getFilename("TSX_EnhancedVehicle_Event.lua", g_currentModDirectory))
+
+-- include our libUtils
+source(Utils.getFilename("libUtils.lua", g_currentModDirectory))
+lU = libUtils()
+lU:setDebug(0)
 
 -- include our new libConfig XML management
 source(Utils.getFilename("libConfig.lua", g_currentModDirectory))

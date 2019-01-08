@@ -3,8 +3,8 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 06.01.2019
--- @Version: 1.0.0.0
+-- @Date: 08.01.2019
+-- @Version: 1.0.0.1
 
 -- #############################################################################
 
@@ -60,7 +60,7 @@ end
 
 function libConfig:addConfigValue(section, name, typ, value, newLine)
   if self.debug > 0 then print("-> "..myName.." ("..self.myName..") addConfigValue()") end
-  if self.debug > 1 then print("--> section: "..section..", name: "..name..", typ: "..typ..", value: "..self:toText(value)) end
+  if self.debug > 1 then print("--> section: "..section..", name: "..name..", typ: "..typ..", value: "..totext(value)) end
 
   -- create empty table node
   local newData = {}
@@ -86,7 +86,7 @@ function libConfig:getConfigValue(section, name)
   -- search through data
   for _, data in pairs(self.dataCurrent) do
     if data.section == section and data.name == name then
-      if self.debug > 1 then print("---> typ: "..data.typ..", value: "..self:toText(data.value)) end
+      if self.debug > 1 then print("---> typ: "..data.typ..", value: "..totext(data.value)) end
       return(data.value)
     end
   end
@@ -132,13 +132,13 @@ function libConfig:readConfig()
       pos[group] = pos[group] + 1
     end
     if data.typ == "float" then
-      self.dataCurrent[key].value = getXMLFloat(xml, groupNameTag .. "#" .. data.name)
+      self.dataCurrent[key].value = getXMLFloat(xml, groupNameTag .. "#" .. data.name) or self.dataCurrent[key].value
     end
     if data.typ == "bool" then
-      self.dataCurrent[key].value = getXMLBool(xml, groupNameTag .. "#" .. data.name)
+      self.dataCurrent[key].value = getXMLBool(xml, groupNameTag .. "#" .. data.name) or self.dataCurrent[key].value
     end
     if data.typ == "table" then
-      self.dataCurrent[key].value = StringUtil.splitString(",", getXMLString(xml, groupNameTag .. "#" .. data.name))
+      self.dataCurrent[key].value = StringUtil.splitString(",", getXMLString(xml, groupNameTag .. "#" .. data.name)) or self.dataCurrent[key].value
     end
   end
 end
@@ -214,19 +214,4 @@ function libConfig:getKeysSortedByValue(tbl, sortFunction)
   end)
 
   return keys
-end
-
--- #############################################################################
-
-function libConfig:toText(input)
-  local _ret = ""
-  if type(input) == "boolean" then
-    _ret = input and "true" or "false"
-  elseif type(input) == "table" then
-    _ret = table.concat(input, ", ")
-  else
-    _ret = input
-  end
-
-  return _ret
 end

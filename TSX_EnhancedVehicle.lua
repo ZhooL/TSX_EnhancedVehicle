@@ -3,11 +3,18 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 06.01.2019
--- @Version: 1.4.4.0
+-- @Date: 08.01.2019
+-- @Version: 1.5.0.0
 
 --[[
 CHANGELOG
+
+2019-01-08 - V1.5.0.0
++ implemented shuttle shift functionality (per vehicle). press assigned key (default: Space) to change driving direction and (default: LCTRL+Space) to turn shuttle shift on/off
++ shuttle shift status per vehicle is stored in savegame
++ added shuttle shift status display left of speedMeter. The green arrow shows the selected driving direction. If shuttle shift is disabled the display turns gray-transparent.
++ added global option "shuttleDefaultIsOn" to choose whether shuttle shift is ON per default when entering "new" vehicles (default: OFF)
+* moved differential status display to right-bottom corner of speedMeter
 
 2019-01-06 - V1.4.4.0
 * completely rewrote the XML config handling. it's much more flexible now for future usage
@@ -71,13 +78,15 @@ TSX_dbg3 = 0
 -- some global stuff - DONT touch
 TSX_EnhancedVehicle.diff_overlayWidth  = 512
 TSX_EnhancedVehicle.diff_overlayHeight = 1024
+TSX_EnhancedVehicle.dir_overlayWidth  = 64
+TSX_EnhancedVehicle.dir_overlayHeight = 256
 TSX_EnhancedVehicle.uiScale = 1
 if g_gameSettings.uiScale ~= nil then
   if debug > 1 then print("-> uiScale: "..TSX_EnhancedVehicle.uiScale) end
   TSX_EnhancedVehicle.uiScale = g_gameSettings.uiScale
 end
-TSX_EnhancedVehicle.sections = { 'fuel', 'dmg', 'misc', 'rpm', 'temp', 'diff' }
-TSX_EnhancedVehicle.actions  = { 'TSX_EnhancedVehicle_FD', 'TSX_EnhancedVehicle_RD', 'TSX_EnhancedVehicle_DM', 'TSX_EnhancedVehicle_RESET', 'TSX_EnhancedVehicle_RELOAD' }
+TSX_EnhancedVehicle.sections = { 'fuel', 'dmg', 'misc', 'rpm', 'temp', 'diff', 'shuttle' }
+TSX_EnhancedVehicle.actions  = { 'TSX_EnhancedVehicle_FD', 'TSX_EnhancedVehicle_RD', 'TSX_EnhancedVehicle_DM', 'TSX_EnhancedVehicle_SHUTTLE_ONOFF', 'TSX_EnhancedVehicle_SHUTTLE_SWITCH', 'TSX_EnhancedVehicle_RESET', 'TSX_EnhancedVehicle_RELOAD' }
 if TSX_dbg then
   for _, v in pairs({ 'TSX_DBG1_UP', 'TSX_DBG1_DOWN', 'TSX_DBG2_UP', 'TSX_DBG2_DOWN', 'TSX_DBG3_UP', 'TSX_DBG3_DOWN' }) do
     table.insert(TSX_EnhancedVehicle.actions, v)
@@ -102,9 +111,11 @@ TSX_EnhancedVehicle.color = {
 TSX_EnhancedVehicle.overlay = {}
 
 -- for diff lock sound
-local file = TSX_EnhancedVehicle.modDirectory.."diff_lock.wav"
-TSX_EnhancedVehicle.DiffLockSoundId = createSample("DiffLockSound");
-loadSample(TSX_EnhancedVehicle.DiffLockSoundId, file, false);
+if g_dedicatedServerInfo == nil then
+  local file = TSX_EnhancedVehicle.modDirectory.."diff_lock.wav"
+  TSX_EnhancedVehicle.DiffLockSoundId = createSample("DiffLockSound");
+  loadSample(TSX_EnhancedVehicle.DiffLockSoundId, file, false);
+end
 
 -- #############################################################################
 
@@ -119,7 +130,7 @@ end
 function TSX_EnhancedVehicle.registerEventListeners(vehicleType)
   if debug > 1 then print("-> " .. myName .. ": registerEventListeners ") end
 
-  for _,n in pairs( { "onLoad", "onPostLoad", "onUpdate", "onUpdateTick", "onDraw", "onReadStream", "onWriteStream", "onRegisterActionEvents", "onEnterVehicle" } ) do
+  for _,n in pairs( { "onLoad", "onPostLoad", "saveToXMLFile", "onUpdate", "onUpdateTick", "onDraw", "onReadStream", "onWriteStream", "onRegisterActionEvents", "onEnterVehicle", "onReverseDirectionChanged" } ) do
     SpecializationUtil.registerEventListener(vehicleType, n, TSX_EnhancedVehicle)
   end
 end
@@ -136,6 +147,7 @@ function TSX_EnhancedVehicle:activateConfig()
   TSX_EnhancedVehicle.overlayTransparancy = lC:getConfigValue("global.text", "overlayTransparancy")
   TSX_EnhancedVehicle.showKeysInHelpMenu  = lC:getConfigValue("global.misc", "showKeysInHelpMenu")
   TSX_EnhancedVehicle.soundIsOn           = lC:getConfigValue("global.misc", "soundIsOn")
+  TSX_EnhancedVehicle.shuttleDefaultIsOn  = lC:getConfigValue("global.misc", "shuttleDefaultIsOn")
 
   -- HUD stuff
   for _, section in pairs(TSX_EnhancedVehicle.sections) do
@@ -144,7 +156,8 @@ function TSX_EnhancedVehicle:activateConfig()
     TSX_EnhancedVehicle[section].posX    = lC:getConfigValue("hud."..section, "posX")
     TSX_EnhancedVehicle[section].posY    = lC:getConfigValue("hud."..section, "posY")
   end
-  TSX_EnhancedVehicle.diff.zoomFactor = lC:getConfigValue("hud.diff", "zoomFactor")
+  TSX_EnhancedVehicle.diff.zoomFactor    = lC:getConfigValue("hud.diff",    "zoomFactor")
+  TSX_EnhancedVehicle.shuttle.zoomFactor = lC:getConfigValue("hud.shuttle", "zoomFactor")
 
   -- Feinstaub
   TSX_EnhancedVehicle.feinstaub = {}
@@ -156,6 +169,7 @@ function TSX_EnhancedVehicle:activateConfig()
     TSX_EnhancedVehicle.feinstaub.min[_i] = tonumber(TSX_EnhancedVehicle.feinstaub.min[_i])
     TSX_EnhancedVehicle.feinstaub.max[_i] = tonumber(TSX_EnhancedVehicle.feinstaub.max[_i])
   end
+
 end
 
 -- #############################################################################
@@ -192,6 +206,7 @@ function TSX_EnhancedVehicle:resetConfig()
   lC:addConfigValue("global.text", "overlayTransparancy", "float", 0.75)
   lC:addConfigValue("global.misc", "showKeysInHelpMenu", "bool",   true)
   lC:addConfigValue("global.misc", "soundIsOn", "bool",            true)
+  lC:addConfigValue("global.misc", "shuttleDefaultIsOn", "bool",   false)
 
   -- fuel
   if g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement ~= nil then
@@ -239,20 +254,37 @@ function TSX_EnhancedVehicle:resetConfig()
   lC:addConfigValue("hud.temp", "posY", "float",   _y or 0)
 
   -- diff
-  lC:addConfigValue("hud.diff", "zoomFactor", "float", 15)
+  lC:addConfigValue("hud.diff", "zoomFactor", "float", 18)
   if g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement ~= nil then
     local _w, _h = getNormalizedScreenValues(TSX_EnhancedVehicle.diff_overlayWidth / lC:getConfigValue("hud.diff", "zoomFactor") * TSX_EnhancedVehicle.uiScale, TSX_EnhancedVehicle.diff_overlayHeight / lC:getConfigValue("hud.diff", "zoomFactor") * TSX_EnhancedVehicle.uiScale)
-    _x = baseX - (_w / 2)
-    _y = baseY + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusY * 1.8) + ksm
+--    _x = baseX - (_w / 2)
+--    _y = baseY + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusY * 2.0) + ksm
+--    _y = baseY - (_h / 2)
+    _x = baseX + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusX * 1.18)
+    _y = baseY - (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusY * 1.28)
   end
   lC:addConfigValue("hud.diff", "enabled", "bool", true)
   lC:addConfigValue("hud.diff", "posX", "float",   _x or 0)
   lC:addConfigValue("hud.diff", "posY", "float",   _y or 0)
 
+  -- shuttle shift indicator
+  lC:addConfigValue("hud.shuttle", "zoomFactor", "float", 3.5)
+  if g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement ~= nil then
+    local _w, _h = getNormalizedScreenValues(TSX_EnhancedVehicle.dir_overlayWidth / lC:getConfigValue("hud.shuttle", "zoomFactor") * TSX_EnhancedVehicle.uiScale, TSX_EnhancedVehicle.dir_overlayHeight / lC:getConfigValue("hud.shuttle", "zoomFactor") * TSX_EnhancedVehicle.uiScale)
+--    _x = baseX - (_w / 2)
+--    _y = baseY + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusY * 1.3)
+    _x = baseX - (g_currentMission.inGameMenu.hud.speedMeter.damageGaugeRadiusX * 1.575)
+    _y = baseY - (_h / 2)
+  end
+  lC:addConfigValue("hud.shuttle", "enabled", "bool", true)
+  lC:addConfigValue("hud.shuttle", "posX", "float",   _x or 0)
+  lC:addConfigValue("hud.shuttle", "posY", "float",   _y or 0)
+
   -- Feinstaub
   lC:addConfigValue("feinstaub", "enabled", "bool", true)
   lC:addConfigValue("feinstaub", "min", "table",    { 0.5, 0.5,  0.5, 1.5 })
   lC:addConfigValue("feinstaub", "max", "table",    {   0,   0, 0.04,   5 })
+
 end
 
 -- #############################################################################
@@ -267,11 +299,21 @@ function TSX_EnhancedVehicle:onPostLoad(savegame)
   if debug > 1 then print("-> " .. myName .. ": onPostLoad" .. mySelf(self)) end
 
   -- (server) set defaults when vehicle is "new"
+  -- vData
+  --  1 - front diff
+  --  2 - back diff
+  --  3 - drive mode
+  --  4 - shuttle isForward
+  --  5 - shuttle inOn
   if self.isServer then
     if self.vData == nil then
       self.vData = {}
-      self.vData.is   = { true, true, -1 }
-      self.vData.want = { false, false, 1 }
+      self.vData.is   = { true, true, -1, false, true }
+      self.vData.want = { false, false, 1, true, false }
+      if TSX_EnhancedVehicle.shuttleDefaultIsOn then
+        self.vData.is[5] = false
+        self.vData.want[5] = true
+      end
       self.vData.torqueRatio   = { 0.5, 0.5, 0.5 }
       self.vData.maxSpeedRatio = { 1.0, 1.0, 1.0 }
       for _, differential in ipairs(self.spec_motorized.differentials) do
@@ -288,15 +330,59 @@ function TSX_EnhancedVehicle:onPostLoad(savegame)
           self.vData.maxSpeedRatio[3] = differential.maxSpeedRatio
         end
       end
-      if debug > 0 then print("--> setup of differentials done" .. mySelf(self)) end
+      if debug > 0 then print("--> setup of vData done" .. mySelf(self)) end
     end
+
+    -- load vehicle shuttle status from savegame
+    if savegame ~= nil then
+      local xmlFile = savegame.xmlFile
+      local key     = savegame.key ..".TSX_EnhancedVehicle"
+
+      local _v
+      -- check for shuttleIsOn
+      _v = getXMLBool(xmlFile, key.."#shuttleIsOn")
+      if _v ~= nil then
+        if _v then
+          self.vData.is[5] = false
+          self.vData.want[5] = true
+          if debug > 1 then print("--> found shuttleIsOn=true in savegame" .. mySelf(self)) end
+        else
+          self.vData.is[5] = true
+          self.vData.want[5] = false
+          if debug > 1 then print("--> found shuttleIsOn=false in savegame" .. mySelf(self)) end
+        end
+      end
+      -- check for shuttleIsForward
+      _v = getXMLBool(xmlFile, key.."#shuttleIsForward")
+      if _v ~= nil then
+        if _v then
+          self.vData.is[4] = false
+          self.vData.want[4] = true
+          if debug > 1 then print("--> found shuttleIsForward=true in savegame" .. mySelf(self)) end
+        else
+          self.vData.is[4] = true
+          self.vData.want[4] = false
+          if debug > 1 then print("--> found shuttleIsForward=false in savegame" .. mySelf(self)) end
+        end
+      end
+    end
+
   end
 end
 
 -- #############################################################################
 
+function TSX_EnhancedVehicle:saveToXMLFile(xmlFile, key)
+  if debug > 1 then print("-> " .. myName .. ": saveToXMLFile" .. mySelf(self)) end
+
+  setXMLBool(xmlFile, key.."#shuttleIsOn",      self.vData.is[5])
+  setXMLBool(xmlFile, key.."#shuttleIsForward", self.vData.is[4])
+end
+
+-- #############################################################################
+
 function TSX_EnhancedVehicle:onUpdate(dt)
-  if debug > 2 then print("-> " .. myName .. ": onUpdate " .. dt .. ", S: " .. bool_to_number(self.isServer) .. ", C: " .. bool_to_number(self.isClient) .. mySelf(self)) end
+  if debug > 2 then print("-> " .. myName .. ": onUpdate " .. dt .. ", S: " .. tostring(self.isServer) .. ", C: " .. tostring(self.isClient) .. mySelf(self)) end
 
   -- (server) process changes between "is" and "want"
   if self.isServer and self.vData ~= nil then
@@ -311,6 +397,7 @@ function TSX_EnhancedVehicle:onUpdate(dt)
       end
       self.vData.is[1] = self.vData.want[1]
     end
+
     -- back diff
     if self.vData.is[2] ~= self.vData.want[2] then
       if self.vData.want[2] then
@@ -322,6 +409,7 @@ function TSX_EnhancedVehicle:onUpdate(dt)
       end
       self.vData.is[2] = self.vData.want[2]
     end
+
     -- wheel drive mode
     if self.vData.is[3] ~= self.vData.want[3] then
       if self.vData.want[3] == 0 then
@@ -336,8 +424,44 @@ function TSX_EnhancedVehicle:onUpdate(dt)
       end
       self.vData.is[3] = self.vData.want[3]
     end
-  end
 
+    -- shuttle shift on/off
+    if self.vData.is[5] ~= self.vData.want[5] then
+      if self.vData.want[5] then
+        -- force setting of drive direction
+        self.vData.is[4] = not self.vData.want[4]
+        if debug > 0 then print("--> ("..self.rootNode..") changed shuttle shift isOn to: ON") end
+      else
+        -- reset drive direction to normal
+        if self.spec_reverseDriving ~= nil and self.spec_reverseDriving.isReverseDriving ~= nil then
+          self.spec_drivable.reverserDirection = self.spec_reverseDriving.isReverseDriving and -1 or 1
+        else
+          self.spec_drivable.reverserDirection = 1
+        end
+        if debug > 0 then print("--> ("..self.rootNode..") changed shuttle shift isOn to: OFF") end
+      end
+      self.vData.is[5] = self.vData.want[5]
+    end
+
+    -- shuttle shift switch direction
+    if self.vData.is[4] ~= self.vData.want[4] then
+      if self.vData.want[4] then
+        self.spec_drivable.reverserDirection = 1
+        if debug > 0 then print("--> ("..self.rootNode..") changed shuttle shift isForward to: TRUE") end
+      else
+        self.spec_drivable.reverserDirection = -1
+        if debug > 0 then print("--> ("..self.rootNode..") changed shuttle shift isForward to: FALSE") end
+      end
+      -- turn around driving direction if vehicle is in reverse driving mode
+      local _isRD = 1
+      if self.spec_reverseDriving ~= nil and self.spec_reverseDriving.isReverseDriving ~= nil then
+        _isRD = self.spec_reverseDriving.isReverseDriving and -1 or 1
+      end
+      self.spec_drivable.reverserDirection = self.spec_drivable.reverserDirection * _isRD
+      self.vData.is[4] = self.vData.want[4]
+    end
+
+  end
 end
 
 -- #############################################################################
@@ -349,11 +473,10 @@ end
 -- #############################################################################
 
 function TSX_EnhancedVehicle:onDraw()
-  if debug > 2 then print("-> " .. myName .. ": onDraw, S: " .. bool_to_number(self.isServer) .. ", C: " .. bool_to_number(self.isClient) .. mySelf(self)) end
+  if debug > 2 then print("-> " .. myName .. ": onDraw, S: " .. tostring(self.isServer) .. ", C: " .. tostring(self.isClient) .. mySelf(self)) end
 
   -- only on client side and GUI is visible
   if self.isClient and not g_gui:getIsGuiVisible() then
-
     local fS = TSX_EnhancedVehicle.fontSize * TSX_EnhancedVehicle.uiScale
     local tP = TSX_EnhancedVehicle.textPadding * TSX_EnhancedVehicle.uiScale
 
@@ -400,6 +523,15 @@ function TSX_EnhancedVehicle:onDraw()
     end
     if TSX_EnhancedVehicle.overlay["diff_dm"] == nil then
       TSX_EnhancedVehicle.overlay["diff_dm"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "overlay_diff_dm.dds")
+    end
+    if TSX_EnhancedVehicle.overlay["dir_fwd"] == nil then
+      TSX_EnhancedVehicle.overlay["dir_fwd"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "direction_indicator_fwd.dds")
+    end
+    if TSX_EnhancedVehicle.overlay["dir_rev"] == nil then
+      TSX_EnhancedVehicle.overlay["dir_rev"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "direction_indicator_rev.dds")
+    end
+    if TSX_EnhancedVehicle.overlay["dir_neutral"] == nil then
+      TSX_EnhancedVehicle.overlay["dir_neutral"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "direction_indicator_neutral.dds")
     end
 
     -- ### do the fuel stuff ###
@@ -589,6 +721,41 @@ function TSX_EnhancedVehicle:onDraw()
       renderOverlay(TSX_EnhancedVehicle.overlay["diff_dm"],    TSX_EnhancedVehicle.diff.posX, TSX_EnhancedVehicle.diff.posY, w, h)
     end
 
+    -- ### do the shuttle shift stuff ###
+    if self.vData ~= nil and TSX_EnhancedVehicle.shuttle.enabled then
+      local _color = { "gray", "gray", "gray" }
+      local _trans = 0.25
+      -- prepare
+      if self.vData.is[5] then
+        if self.vData.is[4] then
+          _color = { "green", "gray", "gray" }
+          _trans = 1
+        end
+        if not self.vData.is[4] then
+          _color = { "gray", "gray", "green" }
+          _trans = 1
+        end
+      end
+
+      -- render overlay
+      w, h = getNormalizedScreenValues(TSX_EnhancedVehicle.dir_overlayWidth / TSX_EnhancedVehicle.shuttle.zoomFactor * TSX_EnhancedVehicle.uiScale, TSX_EnhancedVehicle.dir_overlayHeight / TSX_EnhancedVehicle.shuttle.zoomFactor * TSX_EnhancedVehicle.uiScale)
+      local _col = { unpack(TSX_EnhancedVehicle.color[_color[1]]) }
+      _col[4] = _trans
+      setOverlayColor(TSX_EnhancedVehicle.overlay["dir_fwd"], unpack(_col))
+
+      _col = { unpack(TSX_EnhancedVehicle.color[_color[2]]) }
+      _col[4] = _trans
+      setOverlayColor(TSX_EnhancedVehicle.overlay["dir_neutral"], unpack(_col))
+
+      _col = { unpack(TSX_EnhancedVehicle.color[_color[3]]) }
+      _col[4] = _trans
+      setOverlayColor(TSX_EnhancedVehicle.overlay["dir_rev"], unpack(_col))
+
+      renderOverlay(TSX_EnhancedVehicle.overlay["dir_fwd"],     TSX_EnhancedVehicle.shuttle.posX, TSX_EnhancedVehicle.shuttle.posY, w, h)
+      renderOverlay(TSX_EnhancedVehicle.overlay["dir_neutral"], TSX_EnhancedVehicle.shuttle.posX, TSX_EnhancedVehicle.shuttle.posY, w, h)
+      renderOverlay(TSX_EnhancedVehicle.overlay["dir_rev"],     TSX_EnhancedVehicle.shuttle.posX, TSX_EnhancedVehicle.shuttle.posY, w, h)
+    end
+
     -- reset text stuff to "defaults"
     setTextColor(1,1,1,1);
     setTextAlignment(RenderText.ALIGN_LEFT);
@@ -612,12 +779,12 @@ function TSX_EnhancedVehicle:onReadStream(streamId, connection)
   -- receive initial data from server
   self.vData.is[1] = streamReadBool(streamId);
   self.vData.is[2] = streamReadBool(streamId);
-  self.vData.is[3] = streamReadInt32(streamId);
+  self.vData.is[3] = streamReadInt8(streamId);
+  self.vData.is[4] = streamReadBool(streamId);
+  self.vData.is[5] = streamReadBool(streamId);
 
   if self.isClient then
-    self.vData.want[1] = self.vData.is[1]
-    self.vData.want[2] = self.vData.is[2]
-    self.vData.want[3] = self.vData.is[3]
+    self.vData.want = { unpack(self.vData.is) }
   end
 
 --  if debug then print(DebugUtil.printTableRecursively(self.vData, 0, 0, 2)) end
@@ -631,13 +798,17 @@ function TSX_EnhancedVehicle:onWriteStream(streamId, connection)
   -- send initial data to client
   if g_dedicatedServerInfo ~= nil then
     -- when dedicated server then send want array to client cause onUpdate never ran and thus vData "is" is "wrong"
-    streamWriteBool(streamId,  self.vData.want[1])
-    streamWriteBool(streamId,  self.vData.want[2])
-    streamWriteInt32(streamId, self.vData.want[3])
+    streamWriteBool(streamId, self.vData.want[1])
+    streamWriteBool(streamId, self.vData.want[2])
+    streamWriteInt8(streamId, self.vData.want[3])
+    streamWriteBool(streamId, self.vData.want[4])
+    streamWriteBool(streamId, self.vData.want[5])
   else
-    streamWriteBool(streamId,  self.vData.is[1])
-    streamWriteBool(streamId,  self.vData.is[2])
-    streamWriteInt32(streamId, self.vData.is[3])
+    streamWriteBool(streamId, self.vData.is[1])
+    streamWriteBool(streamId, self.vData.is[2])
+    streamWriteInt8(streamId, self.vData.is[3])
+    streamWriteBool(streamId, self.vData.is[4])
+    streamWriteBool(streamId, self.vData.is[5])
   end
 end
 
@@ -669,8 +840,22 @@ end
 
 -- #############################################################################
 
+function TSX_EnhancedVehicle:onReverseDirectionChanged()
+  if debug > 1 then print("-> " .. myName .. ": onReverseDirectionChanged" .. mySelf(self)) end
+
+  -- if shuttle shift is on then fix stuff after changing driving direction
+  if self.vData.is[5] then
+    self.spec_drivable.reverserDirection = self.vData.is[4] and 1 or -1
+    local _isRD = self.spec_reverseDriving.isReverseDriving and -1 or 1
+    self.spec_drivable.reverserDirection = self.spec_drivable.reverserDirection * _isRD
+  end
+
+end
+
+-- #############################################################################
+
 function TSX_EnhancedVehicle:onRegisterActionEvents(isSelected, isOnActiveVehicle)
-  if debug > 1 then print("-> " .. myName .. ": onRegisterActionEvents " .. bool_to_number(isSelected) .. ", " .. bool_to_number(isOnActiveVehicle) .. ", S: " .. bool_to_number(self.isServer) .. ", C: " .. bool_to_number(self.isClient) .. mySelf(self)) end
+  if debug > 1 then print("-> " .. myName .. ": onRegisterActionEvents " .. tostring(isSelected) .. ", " .. tostring(isOnActiveVehicle) .. ", S: " .. tostring(self.isServer) .. ", C: " .. tostring(self.isClient) .. mySelf(self)) end
 
   -- continue on client side only
   if not self.isClient then
@@ -692,9 +877,8 @@ function TSX_EnhancedVehicle:onRegisterActionEvents(isSelected, isOnActiveVehicl
       -- help menu priorization
       if g_inputBinding ~= nil and g_inputBinding.events ~= nil and g_inputBinding.events[eventName] ~= nil then
         g_inputBinding.events[eventName].displayPriority = 98
-        if actionName == "TSX_EnhancedVehicle_DM" then
-          g_inputBinding.events[eventName].displayPriority = 99
-        end
+        if actionName == "TSX_EnhancedVehicle_SHUTTLE_SWITCH" and self.vData ~= nil and self.vData.is[5] then g_inputBinding.events[eventName].displayPriority = 3 end
+        if actionName == "TSX_EnhancedVehicle_DM" then g_inputBinding.events[eventName].displayPriority = 99 end
         -- don't show certain/all keys in help menu
         if actionName == "TSX_EnhancedVehicle_RESET" or actionName == "TSX_EnhancedVehicle_RELOAD" or not TSX_EnhancedVehicle.showKeysInHelpMenu then
           g_inputBinding.events[eventName].displayIsVisible = false
@@ -716,31 +900,31 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
 
   -- front diff
   if actionName == "TSX_EnhancedVehicle_FD" then
-    if TSX_EnhancedVehicle.DiffLockSoundId ~= nil and TSX_EnhancedVehicle.soundIsOn then
-      playSample(TSX_EnhancedVehicle.DiffLockSoundId, 1, 0.5, 0, 0, 0);
+    if TSX_EnhancedVehicle.DiffLockSoundId ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
+      playSample(TSX_EnhancedVehicle.DiffLockSoundId, 1, 0.5, 0, 0, 0)
     end
     self.vData.want[1] = not self.vData.want[1]
     if self.isClient and not self.isServer then
       self.vData.is[1] = self.vData.want[1]
     end
-    TSX_EnhancedVehicle_Event:sendEvent(self, self.vData.want[1], self.vData.want[2], self.vData.want[3]);
+    TSX_EnhancedVehicle_Event:sendEvent(self, unpack(self.vData.want))
   end
 
   -- back diff
   if actionName == "TSX_EnhancedVehicle_RD" then
-    if TSX_EnhancedVehicle.DiffLockSoundId ~= nil and TSX_EnhancedVehicle.soundIsOn then
+    if TSX_EnhancedVehicle.DiffLockSoundId ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
       playSample(TSX_EnhancedVehicle.DiffLockSoundId, 1, 0.5, 0, 0, 0);
     end
     self.vData.want[2] = not self.vData.want[2]
     if self.isClient and not self.isServer then
       self.vData.is[2] = self.vData.want[2]
     end
-    TSX_EnhancedVehicle_Event:sendEvent(self, self.vData.want[1], self.vData.want[2], self.vData.want[3]);
+    TSX_EnhancedVehicle_Event:sendEvent(self, unpack(self.vData.want))
   end
 
   -- wheel drive mode
   if actionName == "TSX_EnhancedVehicle_DM" then
-    if TSX_EnhancedVehicle.DiffLockSoundId ~= nil and TSX_EnhancedVehicle.soundIsOn then
+    if TSX_EnhancedVehicle.DiffLockSoundId ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
       playSample(TSX_EnhancedVehicle.DiffLockSoundId, 1, 0.5, 0, 0, 0);
     end
     self.vData.want[3] = self.vData.want[3] + 1
@@ -750,7 +934,25 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
     if self.isClient and not self.isServer then
       self.vData.is[3] = self.vData.want[3]
     end
-    TSX_EnhancedVehicle_Event:sendEvent(self, self.vData.want[1], self.vData.want[2], self.vData.want[3]);
+    TSX_EnhancedVehicle_Event:sendEvent(self, unpack(self.vData.want))
+  end
+
+  -- shuttle mode on/off
+  if actionName == "TSX_EnhancedVehicle_SHUTTLE_ONOFF" then
+    self.vData.want[5] = not self.vData.want[5]
+    if self.isClient and not self.isServer then
+      self.vData.is[5] = self.vData.want[5]
+    end
+    TSX_EnhancedVehicle_Event:sendEvent(self, unpack(self.vData.want))
+  end
+
+  -- change driving direction
+  if actionName == "TSX_EnhancedVehicle_SHUTTLE_SWITCH" and self.vData.is[5] then
+    self.vData.want[4] = not self.vData.want[4]
+    if self.isClient and not self.isServer then
+      self.vData.is[4] = self.vData.want[4]
+    end
+    TSX_EnhancedVehicle_Event:sendEvent(self, unpack(self.vData.want))
   end
 
   -- reset config
@@ -799,9 +1001,45 @@ end
 
 -- #############################################################################
 
-function bool_to_number(value)
-  return value and 1 or 0
+-- what a crap... we've to hook into the updateWheelsPhysics function to prevent the vehicle to drive in the wrong direction in shuttle mode
+function TSX_EnhancedVehicle:updateWheelsPhysics( originalFunction, dt, currentSpeed, acceleration, doHandbrake, stopAndGoBraking )
+--print("function WheelsUtil.updateWheelsPhysics("..tostring(self)..", "..tostring(dt)..", "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
+
+  local brakeLights = false
+  if self.vData ~= nil and self.vData.is[5] then
+    if self:getIsVehicleControlledByPlayer() and self:getIsMotorStarted() then
+      if acceleration < -0.001 then
+        if self.vData.is[4] and currentSpeed <= 0.0003 then
+--          print("NO FWD "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
+          acceleration = 0
+          currentSpeed = 0
+          brakeLights = true
+        end
+        if not self.vData.is[4] and currentSpeed >= -0.0003 then
+--          print("NO RWS "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
+          acceleration = 0
+          currentSpeed = 0
+          brakeLights = true
+        end
+      end
+    end
+  end
+
+  -- call the original function to do the actual physics stuff
+  local state, result = pcall( originalFunction, self, dt, currentSpeed, acceleration, doHandbrake, stopAndGoBraking )
+  if not ( state ) then
+    print("Ooops in updateWheelsPhysics :" .. tostring(result))
+  end
+
+  if brakeLights and self.setBrakeLightsVisibility ~= nil then
+    self:setBrakeLightsVisibility(true)
+  end
+
+  return result
 end
+WheelsUtil.updateWheelsPhysics = Utils.overwrittenFunction( WheelsUtil.updateWheelsPhysics, TSX_EnhancedVehicle.updateWheelsPhysics )
+
+-- #############################################################################
 
 function getDmg(start)
   if start.spec_attacherJoints.attachedImplements ~= nil then
@@ -819,6 +1057,11 @@ function getDmg(start)
   end
 end
 
+-- #############################################################################
+
 function mySelf(obj)
   return " (rootNode: " .. obj.rootNode .. ", typeName: " .. obj.typeName .. ", typeDesc: " .. obj.typeDesc .. ")"
 end
+
+-- #############################################################################
+
