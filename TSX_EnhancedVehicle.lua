@@ -996,14 +996,9 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
 
   -- shuttle mode on/off
   if actionName == "TSX_EnhancedVehicle_SHUTTLE_ONOFF" then
-    -- turn parking brake off when shuttle shift is turned off
-    if self.vData.want[5] then
-      self.vData.want[6] = false
-    end
     self.vData.want[5] = not self.vData.want[5]
     if self.isClient and not self.isServer then
       self.vData.is[5] = self.vData.want[5]
-      self.vData.is[6] = self.vData.want[6]
     end
     TSX_EnhancedVehicle_Event:sendEvent(self, unpack(self.vData.want))
   end
