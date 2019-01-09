@@ -3,11 +3,15 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 08.01.2019
--- @Version: 1.5.0.0
+-- @Date: 09.01.2019
+-- @Version: 1.5.0.1
 
 --[[
 CHANGELOG
+
+2019-01-09 - V1.5.0.1
+* fix for log warning about performance of audio sample (wav -> ogg)
+* moved all media files to subfolder
 
 2019-01-08 - V1.5.0.0
 + implemented shuttle shift functionality (per vehicle). press assigned key (default: Space) to change driving direction and (default: LCTRL+Space) to turn shuttle shift on/off
@@ -112,7 +116,7 @@ TSX_EnhancedVehicle.overlay = {}
 
 -- for diff lock sound
 if g_dedicatedServerInfo == nil then
-  local file = TSX_EnhancedVehicle.modDirectory.."diff_lock.wav"
+  local file = TSX_EnhancedVehicle.modDirectory.."media/diff_lock.ogg"
   TSX_EnhancedVehicle.DiffLockSoundId = createSample("DiffLockSound");
   loadSample(TSX_EnhancedVehicle.DiffLockSoundId, file, false);
 end
@@ -500,38 +504,38 @@ function TSX_EnhancedVehicle:onDraw()
 
     -- prepare overlays
     if TSX_EnhancedVehicle.overlay["fuel"] == nil then
-      TSX_EnhancedVehicle.overlay["fuel"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "overlay_bg.dds")
+      TSX_EnhancedVehicle.overlay["fuel"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "media/overlay_bg.dds")
       setOverlayColor(TSX_EnhancedVehicle.overlay["fuel"], 0, 0, 0, TSX_EnhancedVehicle.overlayTransparancy)
     end
     if TSX_EnhancedVehicle.overlay["dmg"] == nil then
-      TSX_EnhancedVehicle.overlay["dmg"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "overlay_bg.dds")
+      TSX_EnhancedVehicle.overlay["dmg"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "media/overlay_bg.dds")
       setOverlayColor(TSX_EnhancedVehicle.overlay["dmg"], 0, 0, 0, TSX_EnhancedVehicle.overlayTransparancy)
     end
     if TSX_EnhancedVehicle.overlay["misc"] == nil then
-      TSX_EnhancedVehicle.overlay["misc"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "overlay_bg.dds")
+      TSX_EnhancedVehicle.overlay["misc"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "media/overlay_bg.dds")
       setOverlayColor(TSX_EnhancedVehicle.overlay["misc"], 0, 0, 0, TSX_EnhancedVehicle.overlayTransparancy)
     end
     if TSX_EnhancedVehicle.overlay["diff_bg"] == nil then
-      TSX_EnhancedVehicle.overlay["diff_bg"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "overlay_diff_bg.dds")
+      TSX_EnhancedVehicle.overlay["diff_bg"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "media/overlay_diff_bg.dds")
       setOverlayColor(TSX_EnhancedVehicle.overlay["diff_bg"], 0, 0, 0, 1)
     end
     if TSX_EnhancedVehicle.overlay["diff_front"] == nil then
-      TSX_EnhancedVehicle.overlay["diff_front"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "overlay_diff_front.dds")
+      TSX_EnhancedVehicle.overlay["diff_front"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "media/overlay_diff_front.dds")
     end
     if TSX_EnhancedVehicle.overlay["diff_back"] == nil then
-      TSX_EnhancedVehicle.overlay["diff_back"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "overlay_diff_back.dds")
+      TSX_EnhancedVehicle.overlay["diff_back"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "media/overlay_diff_back.dds")
     end
     if TSX_EnhancedVehicle.overlay["diff_dm"] == nil then
-      TSX_EnhancedVehicle.overlay["diff_dm"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "overlay_diff_dm.dds")
+      TSX_EnhancedVehicle.overlay["diff_dm"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "media/overlay_diff_dm.dds")
     end
     if TSX_EnhancedVehicle.overlay["dir_fwd"] == nil then
-      TSX_EnhancedVehicle.overlay["dir_fwd"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "direction_indicator_fwd.dds")
+      TSX_EnhancedVehicle.overlay["dir_fwd"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "media/direction_indicator_fwd.dds")
     end
     if TSX_EnhancedVehicle.overlay["dir_rev"] == nil then
-      TSX_EnhancedVehicle.overlay["dir_rev"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "direction_indicator_rev.dds")
+      TSX_EnhancedVehicle.overlay["dir_rev"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "media/direction_indicator_rev.dds")
     end
     if TSX_EnhancedVehicle.overlay["dir_neutral"] == nil then
-      TSX_EnhancedVehicle.overlay["dir_neutral"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "direction_indicator_neutral.dds")
+      TSX_EnhancedVehicle.overlay["dir_neutral"] = createImageOverlay(TSX_EnhancedVehicle.modDirectory .. "media/direction_indicator_neutral.dds")
     end
 
     -- ### do the fuel stuff ###

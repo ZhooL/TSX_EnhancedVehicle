@@ -1,7 +1,8 @@
 # TSX_EnhancedVehicle
-This is a Mod for Farming Simulator 19. It adds differential locks and wheel drive modes to your vehicle. It shows more vehicle details on the HUD also.<br>
+This is a Mod for Farming Simulator 19. It adds shuttle shift, differential locks and wheel drive modes to your vehicle. It shows more vehicle details on the HUD also.<br>
 <br>
-*(c) 2018-2019 by ZhooL. Be so kind to credit me when using this mod or the source code (or parts of it) somewhere.*
+*(c) 2018-2019 by ZhooL. Be so kind to credit me when using this mod or the source code (or parts of it) somewhere.*<br>
+license: https://creativecommons.org/licenses/by-nc-sa/4.0/
 
 ## default key bindings
 * Space - (shuttle shift) switch driving direction
