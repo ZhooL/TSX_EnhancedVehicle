@@ -4,10 +4,13 @@
 -- Author: ZhooL
 -- email: ls19@dark-world.de
 -- @Date: 09.01.2019
--- @Version: 1.5.0.1
+-- @Version: 1.5.0.2
 
 --[[
 CHANGELOG
+
+2019-01-09 - V1.5.0.2
+* bugfix for XML config is being resettet on every game start
 
 2019-01-09 - V1.5.0.1
 * fix for log warning about performance of audio sample (wav -> ogg)
