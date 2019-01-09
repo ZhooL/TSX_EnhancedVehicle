@@ -3,7 +3,7 @@
   <author>ZhooL</author>
   <contributors>Continuum, Toryius</contributors>
 
-  <version>1.5.0.2</version>
+  <version>1.5.1.0</version>
 
   <title>
     <de>EnhancedVehicle</de>
@@ -38,7 +38,19 @@
     </text>
     <text name="input_TSX_EnhancedVehicle_SHUTTLE_SWITCH">
       <de>EV: Fahrrichtung wechseln</de>
-      <en>EV: Change drive direction</en>
+      <en>EV: Change driving direction</en>
+    </text>
+    <text name="input_TSX_EnhancedVehicle_SHUTTLE_FWD">
+      <de>EV: Fahrrichtung vorwärts</de>
+      <en>EV: forward driving direction</en>
+    </text>
+    <text name="input_TSX_EnhancedVehicle_SHUTTLE_REV">
+      <de>EV: Fahrrichtung rückwärts</de>
+      <en>EV: reverse driving direction</en>
+    </text>
+    <text name="input_TSX_EnhancedVehicle_SHUTTLE_PARK">
+      <de>EV: Parkbremse an/aus</de>
+      <en>EV: parking brake on/off</en>
     </text>
     <text name="input_TSX_EnhancedVehicle_RESET">
       <de>EV: HUD zurücksetzen</de>
@@ -56,6 +68,9 @@
     <action name="TSX_EnhancedVehicle_DM"             category="VEHICLE"/>
     <action name="TSX_EnhancedVehicle_SHUTTLE_ONOFF"  category="VEHICLE"/>
     <action name="TSX_EnhancedVehicle_SHUTTLE_SWITCH" category="VEHICLE"/>
+    <action name="TSX_EnhancedVehicle_SHUTTLE_FWD"    category="VEHICLE"/>
+    <action name="TSX_EnhancedVehicle_SHUTTLE_REV"    category="VEHICLE"/>
+    <action name="TSX_EnhancedVehicle_SHUTTLE_PARK"   category="VEHICLE"/>
     <action name="TSX_EnhancedVehicle_RESET"          category="VEHICLE"/>
     <action name="TSX_EnhancedVehicle_RELOAD"         category="VEHICLE"/>
 <!--
@@ -83,6 +98,15 @@
     </actionBinding>
     <actionBinding action="TSX_EnhancedVehicle_SHUTTLE_SWITCH">
       <binding device="KB_MOUSE_DEFAULT" input="KEY_space" axisComponent="+" inputComponent="+" index="2"/>
+    </actionBinding>
+    <actionBinding action="TSX_EnhancedVehicle_SHUTTLE_FWD">
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_insert" axisComponent="+" inputComponent="+" index="2"/>
+    </actionBinding>
+    <actionBinding action="TSX_EnhancedVehicle_SHUTTLE_REV">
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_delete" axisComponent="+" inputComponent="+" index="2"/>
+    </actionBinding>
+    <actionBinding action="TSX_EnhancedVehicle_SHUTTLE_PARK">
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_end" axisComponent="+" inputComponent="+" index="2"/>
     </actionBinding>
     <actionBinding action="TSX_EnhancedVehicle_RESET">
       <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_divide" axisComponent="+" inputComponent="+" index="2"/>

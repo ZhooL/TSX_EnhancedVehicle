@@ -3,8 +3,8 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 08.01.2019
--- @Version: 1.5.0.0
+-- @Date: 09.01.2019
+-- @Version: 1.5.1.0
 
 local myName = "TSX_EnhancedVehicle_Event"
 
@@ -48,6 +48,7 @@ function TSX_EnhancedVehicle_Event:readStream(streamId, connection)
   self.vehicle.vData.want[3] = streamReadInt8(streamId);
   self.vehicle.vData.want[4] = streamReadBool(streamId);
   self.vehicle.vData.want[5] = streamReadBool(streamId);
+  self.vehicle.vData.want[6] = streamReadBool(streamId);
 
   if not connection:getIsServer() then
     g_server:broadcastEvent(TSX_EnhancedVehicle_Event:new(self.vehicle, unpack(self.vehicle.vData.want)), nil, connection)
@@ -72,6 +73,7 @@ function TSX_EnhancedVehicle_Event:writeStream(streamId, connection)
   streamWriteInt8(streamId, self.vehicle.vData.want[3])
   streamWriteBool(streamId, self.vehicle.vData.want[4])
   streamWriteBool(streamId, self.vehicle.vData.want[5])
+  streamWriteBool(streamId, self.vehicle.vData.want[6])
 end
 
 -- #############################################################################
