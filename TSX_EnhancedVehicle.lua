@@ -12,6 +12,7 @@ CHANGELOG
 2019-01-09 - V1.5.1.0
 + (shuttle shift) added two keybindings (default: insert and delete) for direct selection of forward/reverse driving direction
 + (shuttle shift) implemented a parking break (default key: end). when active, you can't move the vehicle... obviously
++ try to disable conflicting keyboardSteer Mod functions (I'm sorry, Mogli12)
 
 2019-01-09 - V1.5.0.2
 * bugfix for XML config is being resettet on every game start
@@ -408,8 +409,20 @@ end
 function TSX_EnhancedVehicle:onUpdate(dt)
   if debug > 2 then print("-> " .. myName .. ": onUpdate " .. dt .. ", S: " .. tostring(self.isServer) .. ", C: " .. tostring(self.isClient) .. mySelf(self)) end
 
+    -- hack for keyboardSteer
+    if self.ksmShuttleIsOn ~= nil and self.ksmShuttleIsOn then
+      self.ksmShuttleIsOn = false  -- turn off shuttle control of keyboardSteer
+    end
+    if self.ksmReverseIsOn ~= nil and self.ksmReverseIsOn then
+      self.ksmReverseIsOn = false  -- turn of keyboardSteers backward looking camera when driving backwards
+    end
+    if self.ksmReverserDirection ~= nil then
+      self.ksmReverserDirection = nil  -- delete driving direction variable of keyboardSteer
+    end
+
   -- (server) process changes between "is" and "want"
   if self.isServer and self.vData ~= nil then
+
     -- front diff
     if self.vData.is[1] ~= self.vData.want[1] then
       if self.vData.want[1] then
