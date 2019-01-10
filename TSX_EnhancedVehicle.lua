@@ -12,7 +12,7 @@ CHANGELOG
 2019-01-10 - V1.5.1.1
 * (shuttle shift) bugfix for shuttle not working when a device with own motor is attached (like the big woodcutter)
 * (shuttle shift) reverse lights are now working again when driving backwards. But reverse driving warning sound (beep beep) is still broken.
-+ (shuttle shift) added air sound when releasing parking brake
++ (shuttle shift) added some sounds
 
 2019-01-09 - V1.5.1.0
 + (shuttle shift) added two keybindings (default: insert and delete) for direct selection of forward/reverse driving direction
@@ -137,16 +137,15 @@ TSX_EnhancedVehicle.color = {
 -- for overlays
 TSX_EnhancedVehicle.overlay = {}
 
--- for diff lock sound
+-- load sound effects
 if g_dedicatedServerInfo == nil then
-  local file = TSX_EnhancedVehicle.modDirectory.."media/diff_lock.ogg"
-  TSX_EnhancedVehicle.DiffLockSoundId = createSample("DiffLockSound")
-  loadSample(TSX_EnhancedVehicle.DiffLockSoundId, file, false)
-
-  file = TSX_EnhancedVehicle.modDirectory.."media/druckluft.ogg"
-  TSX_EnhancedVehicle.DruckluftSoundId = createSample("Druckluft")
-  loadSample(TSX_EnhancedVehicle.DruckluftSoundId, file, false)
-
+  local file, id
+  TSX_EnhancedVehicle.sounds = {}
+  for _, id in ipairs({"diff_lock", "brakeOn", "brakeOff", "shifter"}) do
+    TSX_EnhancedVehicle.sounds[id] = createSample(id)
+    file = TSX_EnhancedVehicle.modDirectory.."media/"..id..".ogg"
+    loadSample(TSX_EnhancedVehicle.sounds[id], file, false)
+  end
 end
 
 -- #############################################################################
@@ -968,8 +967,8 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
 
   -- front diff
   if actionName == "TSX_EnhancedVehicle_FD" then
-    if TSX_EnhancedVehicle.DiffLockSoundId ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
-      playSample(TSX_EnhancedVehicle.DiffLockSoundId, 1, 0.5, 0, 0, 0)
+    if TSX_EnhancedVehicle.sounds["diff_lock"] ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
+      playSample(TSX_EnhancedVehicle.sounds["diff_lock"], 1, 0.5, 0, 0, 0)
     end
     self.vData.want[1] = not self.vData.want[1]
     if self.isClient and not self.isServer then
@@ -980,8 +979,8 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
 
   -- back diff
   if actionName == "TSX_EnhancedVehicle_RD" then
-    if TSX_EnhancedVehicle.DiffLockSoundId ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
-      playSample(TSX_EnhancedVehicle.DiffLockSoundId, 1, 0.5, 0, 0, 0)
+    if TSX_EnhancedVehicle.sounds["diff_lock"] ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
+      playSample(TSX_EnhancedVehicle.sounds["diff_lock"], 1, 0.5, 0, 0, 0)
     end
     self.vData.want[2] = not self.vData.want[2]
     if self.isClient and not self.isServer then
@@ -992,8 +991,8 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
 
   -- wheel drive mode
   if actionName == "TSX_EnhancedVehicle_DM" then
-    if TSX_EnhancedVehicle.DiffLockSoundId ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
-      playSample(TSX_EnhancedVehicle.DiffLockSoundId, 1, 0.5, 0, 0, 0)
+    if TSX_EnhancedVehicle.sounds["diff_lock"] ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
+      playSample(TSX_EnhancedVehicle.sounds["diff_lock"], 1, 0.5, 0, 0, 0)
     end
     self.vData.want[3] = self.vData.want[3] + 1
     if self.vData.want[3] > 1 then
@@ -1016,6 +1015,10 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
 
   -- change driving direction
   if actionName == "TSX_EnhancedVehicle_SHUTTLE_SWITCH" and self.vData.is[5] and not self.vData.is[6] then
+    -- play sound effect
+    if TSX_EnhancedVehicle.sounds["shifter"] ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
+      playSample(TSX_EnhancedVehicle.sounds["shifter"], 1, 0.5, 0, 0, 0)
+    end
     self.vData.want[4] = not self.vData.want[4]
     if self.isClient and not self.isServer then
       self.vData.is[4] = self.vData.want[4]
@@ -1025,6 +1028,9 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
 
   -- driving direction forwards
   if actionName == "TSX_EnhancedVehicle_SHUTTLE_FWD" and self.vData.is[5] and not self.vData.want[4] and not self.vData.is[6] then
+    if TSX_EnhancedVehicle.sounds["shifter"] ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
+      playSample(TSX_EnhancedVehicle.sounds["shifter"], 1, 0.5, 0, 0, 0)
+    end
     self.vData.want[4] = true
     if self.isClient and not self.isServer then
       self.vData.is[4] = self.vData.want[4]
@@ -1034,6 +1040,9 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
 
   -- driving direction reverse
   if actionName == "TSX_EnhancedVehicle_SHUTTLE_REV" and self.vData.is[5] and self.vData.want[4] and not self.vData.is[6] then
+    if TSX_EnhancedVehicle.sounds["shifter"] ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
+      playSample(TSX_EnhancedVehicle.sounds["shifter"], 1, 0.5, 0, 0, 0)
+    end
     self.vData.want[4] = false
     if self.isClient and not self.isServer then
       self.vData.is[4] = self.vData.want[4]
@@ -1043,9 +1052,11 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
 
   -- parking brake on/off
   if actionName == "TSX_EnhancedVehicle_SHUTTLE_PARK" and self.vData.is[5] then
-    -- play parking brake release sound
-    if self.vData.is[6] then
-      playSample(TSX_EnhancedVehicle.DruckluftSoundId, 1, 0.2, 0, 0, 0)
+    if self.vData.is[6] and TSX_EnhancedVehicle.sounds["brakeOff"] ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
+      playSample(TSX_EnhancedVehicle.sounds["brakeOff"], 1, 0.2, 0, 0, 0)
+    end
+    if not self.vData.is[6] and TSX_EnhancedVehicle.sounds["brakeOn"] ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
+      playSample(TSX_EnhancedVehicle.sounds["brakeOn"], 1, 0.3, 0, 0, 0)
     end
     self.vData.want[6] = not self.vData.want[6]
     if self.isClient and not self.isServer then
