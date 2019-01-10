@@ -3,15 +3,21 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 09.01.2019
--- @Version: 1.5.1.0
+-- @Date: 10.01.2019
+-- @Version: 1.5.1.1
 
 --[[
 CHANGELOG
 
+2019-01-10 - V1.5.1.1
+* (shuttle shift) bugfix for shuttle not working when a device with own motor is attached (like the big woodcutter)
+* (shuttle shift) reverse lights are now working again when driving backwards. But reverse driving warning sound (beep beep) is still broken.
++ (shuttle shift) added air sound when releasing parking brake
+
 2019-01-09 - V1.5.1.0
 + (shuttle shift) added two keybindings (default: insert and delete) for direct selection of forward/reverse driving direction
 + (shuttle shift) implemented a parking break (default key: end). when active, you can't move the vehicle... obviously
++ status of diff locks and drive mode per vehicle are now stored in savegame as well
 + try to disable conflicting keyboardSteer Mod functions (I'm sorry, Mogli12)
 
 2019-01-09 - V1.5.0.2
@@ -136,6 +142,11 @@ if g_dedicatedServerInfo == nil then
   local file = TSX_EnhancedVehicle.modDirectory.."media/diff_lock.ogg"
   TSX_EnhancedVehicle.DiffLockSoundId = createSample("DiffLockSound")
   loadSample(TSX_EnhancedVehicle.DiffLockSoundId, file, false)
+
+  file = TSX_EnhancedVehicle.modDirectory.."media/druckluft.ogg"
+  TSX_EnhancedVehicle.DruckluftSoundId = createSample("Druckluft")
+  loadSample(TSX_EnhancedVehicle.DruckluftSoundId, file, false)
+
 end
 
 -- #############################################################################
@@ -523,7 +534,7 @@ function TSX_EnhancedVehicle:onDraw()
   if debug > 2 then print("-> " .. myName .. ": onDraw, S: " .. tostring(self.isServer) .. ", C: " .. tostring(self.isClient) .. mySelf(self)) end
 
   -- only on client side and GUI is visible
-  if self.isClient and not g_gui:getIsGuiVisible() then
+  if self.isClient and not g_gui:getIsGuiVisible() and self:getIsControlled() then
     local fS = TSX_EnhancedVehicle.fontSize * TSX_EnhancedVehicle.uiScale
     local tP = TSX_EnhancedVehicle.textPadding * TSX_EnhancedVehicle.uiScale
 
@@ -919,8 +930,8 @@ function TSX_EnhancedVehicle:onRegisterActionEvents(isSelected, isOnActiveVehicl
     return
   end
 
-  -- only in active vehicle
-  if isOnActiveVehicle then
+  -- only in active vehicle and when we control it
+  if isOnActiveVehicle and self:getIsControlled() then
     -- we could have more than one event, so prepare a table to store them
     if self.ActionEvents == nil then
       self.ActionEvents = {}
@@ -1032,6 +1043,10 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
 
   -- parking brake on/off
   if actionName == "TSX_EnhancedVehicle_SHUTTLE_PARK" and self.vData.is[5] then
+    -- play parking brake release sound
+    if self.vData.is[6] then
+      playSample(TSX_EnhancedVehicle.DruckluftSoundId, 1, 0.2, 0, 0, 0)
+    end
     self.vData.want[6] = not self.vData.want[6]
     if self.isClient and not self.isServer then
       self.vData.is[6] = self.vData.want[6]
@@ -1090,8 +1105,12 @@ function TSX_EnhancedVehicle:updateWheelsPhysics( originalFunction, dt, currentS
 --print("function WheelsUtil.updateWheelsPhysics("..tostring(self)..", "..tostring(dt)..", "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
 
   local brakeLights = false
+  local reverseLights = false
   if self.vData ~= nil and self.vData.is[5] then
     if self:getIsVehicleControlledByPlayer() and self:getIsMotorStarted() then
+      if currentSpeed <= -0.0003 then
+        reverseLights = true
+      end
       if self.vData.is[6] then
         brakeLights = true
         if currentSpeed >= -0.0003 and currentSpeed <= 0.0003 then
@@ -1126,6 +1145,9 @@ function TSX_EnhancedVehicle:updateWheelsPhysics( originalFunction, dt, currentS
 
   if brakeLights and self.setBrakeLightsVisibility ~= nil then
     self:setBrakeLightsVisibility(true)
+  end
+  if reverseLights and self.setReverseLightsVisibility ~= nil then
+    self:setReverseLightsVisibility(true)
   end
 
   return result
