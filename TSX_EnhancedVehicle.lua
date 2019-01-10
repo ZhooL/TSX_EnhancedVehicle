@@ -1053,10 +1053,10 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
   -- parking brake on/off
   if actionName == "TSX_EnhancedVehicle_SHUTTLE_PARK" and self.vData.is[5] then
     if self.vData.is[6] and TSX_EnhancedVehicle.sounds["brakeOff"] ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
-      playSample(TSX_EnhancedVehicle.sounds["brakeOff"], 1, 0.2, 0, 0, 0)
+      playSample(TSX_EnhancedVehicle.sounds["brakeOff"], 1, 0.1, 0, 0, 0)
     end
     if not self.vData.is[6] and TSX_EnhancedVehicle.sounds["brakeOn"] ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
-      playSample(TSX_EnhancedVehicle.sounds["brakeOn"], 1, 0.3, 0, 0, 0)
+      playSample(TSX_EnhancedVehicle.sounds["brakeOn"], 1, 0.1, 0, 0, 0)
     end
     self.vData.want[6] = not self.vData.want[6]
     if self.isClient and not self.isServer then
