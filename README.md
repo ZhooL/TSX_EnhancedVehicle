@@ -7,6 +7,8 @@ license: https://creativecommons.org/licenses/by-nc-sa/4.0/
 ## default key bindings
 * Space - (shuttle shift) switch driving direction
 * lCTRL+Space - turn shuttle shift functionality on/off
+* insert/delete - switch driving direction directly to forward/backward
+* end - turn parking brake on/off
 * KeyPad 7 - enable/disable front axle differential lock
 * KeyPad 8 - enable/disable back axle differential lock
 * KeyPad 9 - switch wheel drive mode between 4WD (four wheel drive) or 2WD (two wheel drive)
