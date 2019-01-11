@@ -3,11 +3,14 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 10.01.2019
--- @Version: 1.5.1.1
+-- @Date: 11.01.2019
+-- @Version: 1.5.1.2
 
 --[[
 CHANGELOG
+
+2019-01-11 - V1.5.1.2
+* (shuttle shift) better integration with keyboardSteer. backward looking camera should work again
 
 2019-01-10 - V1.5.1.1
 * (shuttle shift) bugfix for shuttle not working when a device with own motor is attached (like the big woodcutter)
@@ -148,6 +151,11 @@ if g_dedicatedServerInfo == nil then
   end
 end
 
+ksm_loaded = false
+if g_modIsLoaded.FS19_KeyboardSteer ~= nil then
+  ksm_loaded = true
+end
+
 -- #############################################################################
 
 function TSX_EnhancedVehicle.prerequisitesPresent(specializations)
@@ -222,7 +230,7 @@ function TSX_EnhancedVehicle:resetConfig()
 
   -- support for keyboardSteer
   ksm = 0
-  if g_modIsLoaded.FS19_KeyboardSteer ~= nil then
+  if ksm_loaded then
     ksm = 0.07 * TSX_EnhancedVehicle.uiScale
     if debug > 1 then print("-> found keyboardSteerMogli. Adjusting some HUD elements") end
   end
@@ -419,16 +427,10 @@ end
 function TSX_EnhancedVehicle:onUpdate(dt)
   if debug > 2 then print("-> " .. myName .. ": onUpdate " .. dt .. ", S: " .. tostring(self.isServer) .. ", C: " .. tostring(self.isClient) .. mySelf(self)) end
 
-    -- hack for keyboardSteer
-    if self.ksmShuttleIsOn ~= nil and self.ksmShuttleIsOn then
-      self.ksmShuttleIsOn = false  -- turn off shuttle control of keyboardSteer
-    end
-    if self.ksmReverseIsOn ~= nil and self.ksmReverseIsOn then
-      self.ksmReverseIsOn = false  -- turn of keyboardSteers backward looking camera when driving backwards
-    end
-    if self.ksmReverserDirection ~= nil then
-      self.ksmReverserDirection = nil  -- delete driving direction variable of keyboardSteer
-    end
+  -- hack for keyboardSteer
+  if ksm_loaded then
+    self.ksmShuttleIsOn = false  -- turn off shuttle control of keyboardSteer
+  end
 
   -- (server) process changes between "is" and "want"
   if self.isServer and self.vData ~= nil then
@@ -1119,8 +1121,18 @@ function TSX_EnhancedVehicle:updateWheelsPhysics( originalFunction, dt, currentS
   local reverseLights = false
   if self.vData ~= nil and self.vData.is[5] then
     if self:getIsVehicleControlledByPlayer() and self:getIsMotorStarted() then
+      -- are we driving backwards?
       if currentSpeed <= -0.0003 then
         reverseLights = true
+        if ksm_loaded then
+          self.ksmMovingDir = -1
+          self:ksmSetState( "ksmCamFwd", false )
+        end
+      end
+      -- are we driving forwards?
+      if currentSpeed >= 0.0003 and ksm_loaded then
+        self.ksmMovingDir = 1
+        self:ksmSetState( "ksmCamFwd", true )
       end
       if self.vData.is[6] then
         brakeLights = true
@@ -1132,13 +1144,13 @@ function TSX_EnhancedVehicle:updateWheelsPhysics( originalFunction, dt, currentS
       else
         if acceleration < -0.001 then
           if self.vData.is[4] and currentSpeed <= 0.0003 then
-  --          print("NO FWD "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
+--            print("NO FWD "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
             acceleration = 0
             currentSpeed = 0
             brakeLights = true
           end
           if not self.vData.is[4] and currentSpeed >= -0.0003 then
-  --          print("NO RWS "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
+--            print("NO RWS "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
             acceleration = 0
             currentSpeed = 0
             brakeLights = true
