@@ -3,7 +3,7 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 11.01.2019
+-- @Date: 12.01.2019
 -- @Version: 1.5.1.2
 
 --[[
@@ -11,6 +11,7 @@ CHANGELOG
 
 2019-01-11 - V1.5.1.2
 * (shuttle shift) better integration with keyboardSteer. backward looking camera should work again
+* (shuttle shift) changed behavior: when vehicle moves (without throttle) and opposite direction is selected it will brake
 
 2019-01-10 - V1.5.1.1
 * (shuttle shift) bugfix for shuttle not working when a device with own motor is attached (like the big woodcutter)
@@ -430,6 +431,7 @@ function TSX_EnhancedVehicle:onUpdate(dt)
   -- hack for keyboardSteer
   if ksm_loaded then
     self.ksmShuttleIsOn = false  -- turn off shuttle control of keyboardSteer
+    self.ksmReverserDirection = nil  -- delete driving direction variable of keyboardSteer
   end
 
   -- (server) process changes between "is" and "want"
@@ -1124,16 +1126,29 @@ function TSX_EnhancedVehicle:updateWheelsPhysics( originalFunction, dt, currentS
       -- are we driving backwards?
       if currentSpeed <= -0.0003 then
         reverseLights = true
+        if self.vData.is[4] then
+          acceleration = 0
+          currentSpeed = 0
+          brakeLights = true
+        end
         if ksm_loaded then
           self.ksmMovingDir = -1
           self:ksmSetState( "ksmCamFwd", false )
         end
       end
       -- are we driving forwards?
-      if currentSpeed >= 0.0003 and ksm_loaded then
-        self.ksmMovingDir = 1
-        self:ksmSetState( "ksmCamFwd", true )
+      if currentSpeed >= 0.0003 then
+        if not self.vData.is[4] then
+          acceleration = 0
+          currentSpeed = 0
+          brakeLights = true
+        end
+        if ksm_loaded then
+          self.ksmMovingDir = 1
+          self:ksmSetState( "ksmCamFwd", true )
+        end
       end
+      -- parkBreakIsOn
       if self.vData.is[6] then
         brakeLights = true
         if currentSpeed >= -0.0003 and currentSpeed <= 0.0003 then
@@ -1142,6 +1157,7 @@ function TSX_EnhancedVehicle:updateWheelsPhysics( originalFunction, dt, currentS
         acceleration = 0
         currentSpeed = 0
       else
+        -- don't make vehicle go in old behavior (drive reverse when pressing "back" key)
         if acceleration < -0.001 then
           if self.vData.is[4] and currentSpeed <= 0.0003 then
 --            print("NO FWD "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
