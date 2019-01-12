@@ -4,10 +4,13 @@
 -- Author: ZhooL
 -- email: ls19@dark-world.de
 -- @Date: 12.01.2019
--- @Version: 1.5.1.2
+-- @Version: 1.6.0.0
 
 --[[
 CHANGELOG
+
+2019-01-12 - V1.6.0.0
++ implemented four new keybindings for hydraulic front+rear up/down and on/off (default: lAlt+1 to 4)
 
 2019-01-11 - V1.5.1.2
 * (shuttle shift) better integration with keyboardSteer. backward looking camera should work again
@@ -117,6 +120,10 @@ TSX_EnhancedVehicle.actions  = { 'TSX_EnhancedVehicle_FD',
                                  'TSX_EnhancedVehicle_SHUTTLE_FWD',
                                  'TSX_EnhancedVehicle_SHUTTLE_REV',
                                  'TSX_EnhancedVehicle_SHUTTLE_PARK',
+                                 'TSX_EnhancedVehicle_AJ_REAR_UPDOWN',
+                                 'TSX_EnhancedVehicle_AJ_REAR_ONOFF',
+                                 'TSX_EnhancedVehicle_AJ_FRONT_UPDOWN',
+                                 'TSX_EnhancedVehicle_AJ_FRONT_ONOFF',
                                  'TSX_EnhancedVehicle_RESET',
                                  'TSX_EnhancedVehicle_RELOAD' }
 if TSX_dbg then
@@ -949,7 +956,7 @@ function TSX_EnhancedVehicle:onRegisterActionEvents(isSelected, isOnActiveVehicl
       -- help menu priorization
       if g_inputBinding ~= nil and g_inputBinding.events ~= nil and g_inputBinding.events[eventName] ~= nil then
         g_inputBinding.events[eventName].displayPriority = 98
-        if actionName == "TSX_EnhancedVehicle_SHUTTLE_SWITCH" and self.vData ~= nil and self.vData.is[5] then g_inputBinding.events[eventName].displayPriority = 3 end
+        if (actionName == "TSX_EnhancedVehicle_SHUTTLE_SWITCH" or actionName == "TSX_EnhancedVehicle_SHUTTLE_PARK") and self.vData ~= nil and self.vData.is[5] then g_inputBinding.events[eventName].displayPriority = 3 end
         if actionName == "TSX_EnhancedVehicle_DM" then g_inputBinding.events[eventName].displayPriority = 99 end
         -- don't show certain/all keys in help menu
         if actionName == "TSX_EnhancedVehicle_RESET" or actionName == "TSX_EnhancedVehicle_RELOAD" or not TSX_EnhancedVehicle.showKeysInHelpMenu then
@@ -1070,8 +1077,80 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
     TSX_EnhancedVehicle_Event:sendEvent(self, unpack(self.vData.want))
   end
 
+  -- rear hydraulic up/down
+  if actionName == "TSX_EnhancedVehicle_AJ_REAR_UPDOWN" then
+    TSX_EnhancedVehicle:getAttachments(self)
+
+    local _updown = nil
+    for _, _v in pairs(joints_back) do
+      if _updown == nil then
+        _updown = not _v[1].spec_attacherJoints.attacherJoints[_v[2]].moveDown
+      end
+      _v[1].spec_attacherJoints.setJointMoveDown(_v[1], _v[2], _updown)
+      if debug > 1 then print("--> rear up/down: ".._v[1].rootNode.."/".._v[2].."/"..tostring(_updown) ) end
+    end
+  end
+
+  -- front hydraulic up/down
+  if actionName == "TSX_EnhancedVehicle_AJ_FRONT_UPDOWN" then
+    TSX_EnhancedVehicle:getAttachments(self)
+
+    local _updown = nil
+    for _, _v in pairs(joints_front) do
+      if _updown == nil then
+        _updown = not _v[1].spec_attacherJoints.attacherJoints[_v[2]].moveDown
+      end
+      _v[1].spec_attacherJoints.setJointMoveDown(_v[1], _v[2], _updown)
+      if debug > 1 then print("--> front up/down: ".._v[1].rootNode.."/".._v[2].."/"..tostring(_updown) ) end
+    end
+  end
+
+  -- rear hydraulic on/off
+  if actionName == "TSX_EnhancedVehicle_AJ_REAR_ONOFF" then
+    TSX_EnhancedVehicle:getAttachments(self)
+
+    for _, object in pairs(implements_back) do
+      -- new onoff status
+      local _onoff = nil
+      if _onoff == nil then
+        _onoff = not object.spec_turnOnVehicle.isTurnedOn
+      end
+      if _onoff and object.spec_turnOnVehicle.requiresMotorTurnOn and self.spec_motorized and not self.spec_motorized:getIsOperating() then
+        _onoff = false
+      end
+
+      -- set new onoff status
+      object.spec_turnOnVehicle.setIsTurnedOn(object, _onoff)
+
+      if debug > 1 then print("--> rear on/off: "..object.rootNode.."/"..tostring(_onoff)) end
+    end
+  end
+
+  -- front hydraulic on/off
+  if actionName == "TSX_EnhancedVehicle_AJ_FRONT_ONOFF" then
+    TSX_EnhancedVehicle:getAttachments(self)
+
+    for _, object in pairs(implements_front) do
+      -- new onoff status
+      local _onoff = nil
+      if _onoff == nil then
+        _onoff = not object.spec_turnOnVehicle.isTurnedOn
+      end
+      if _onoff and object.spec_turnOnVehicle.requiresMotorTurnOn and self.spec_motorized and not self.spec_motorized:getIsOperating() then
+        _onoff = false
+      end
+
+      -- set new onoff status
+      object.spec_turnOnVehicle.setIsTurnedOn(object, _onoff)
+
+      if debug > 1 then print("--> front on/off: "..object.rootNode.."/"..tostring(_onoff)) end
+    end
+  end
+
   -- reset config
   if actionName == "TSX_EnhancedVehicle_RESET" then
+--print(DebugUtil.printTableRecursively(self.spec_attacherJoints, 0, 0, 3))
+
     TSX_EnhancedVehicle:resetConfig()
     lC:writeConfig()
     TSX_EnhancedVehicle:activateConfig()
@@ -1111,6 +1190,60 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
       TSX_dbg3 = TSX_dbg3 - 0.01
     end
   end
+
+end
+
+-- #############################################################################
+
+function TSX_EnhancedVehicle:getAttachments2(rootNode, obj)
+  local idx, attacherJoint
+  local relX, relY, relZ
+  for idx, attacherJoint in pairs(obj.spec_attacherJoints.attacherJoints) do
+    -- position relative to our vehicle
+    local x, y, z = getWorldTranslation(attacherJoint.jointTransform)
+    relX, relY, relZ = worldToLocal(rootNode, x, y, z)
+    -- when it can be moved up and down ->
+    if attacherJoint.allowsLowering then
+      if relZ > 0 then -- front
+        table.insert(joints_front, { obj, idx })
+      end
+      if relZ < 0 then -- back
+        table.insert(joints_back, { obj, idx })
+      end
+      if debug > 2 then print(obj.rootNode.."/"..idx.." x: "..tostring(x)..", y: "..tostring(y)..", z: "..tostring(z)) end
+      if debug > 2 then print(obj.rootNode.."/"..idx.." x: "..tostring(relX)..", y: "..tostring(relY)..", z: "..tostring(relZ)) end
+    end
+
+    -- what is attached here?
+    local implement = obj.spec_attacherJoints:getImplementByJointDescIndex(idx)
+    -- can it be turned off and on again? ;-)
+    if implement ~= nil and implement.object ~= nil and implement.object.spec_turnOnVehicle ~= nil then
+      if relZ > 0 then -- front
+        table.insert(implements_front, implement.object)
+      end
+      if relZ < 0 then -- back
+        table.insert(implements_back, implement.object)
+      end
+
+      -- when it has joints by itsself then recursive into them
+      if implement.object.spec_attacherJoints ~= nil then
+        TSX_EnhancedVehicle:getAttachments2(rootNode, implement.object)
+      end
+
+    end
+  end
+end
+
+-- #############################################################################
+
+function TSX_EnhancedVehicle:getAttachments(obj)
+  joints_front = {}
+  joints_back = {}
+  implements_front = {}
+  implements_back = {}
+
+  -- assemble a list of all attachments
+  TSX_EnhancedVehicle:getAttachments2(obj.rootNode, obj)
 
 end
 
@@ -1161,13 +1294,13 @@ function TSX_EnhancedVehicle:updateWheelsPhysics( originalFunction, dt, currentS
         -- don't make vehicle go in old behavior (drive reverse when pressing "back" key)
         if acceleration < -0.001 then
           if self.vData.is[4] and currentSpeed <= 0.0003 then
-            print("NO FWD "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
+--            print("NO FWD "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
             acceleration = 0
             currentSpeed = 0
             brakeLights = true
           end
           if not self.vData.is[4] and currentSpeed >= -0.0003 then
-            print("NO RWS "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
+--            print("NO RWS "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
             acceleration = 0
             currentSpeed = 0
             brakeLights = true

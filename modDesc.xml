@@ -3,7 +3,7 @@
   <author>ZhooL</author>
   <contributors>Continuum, Toryius</contributors>
 
-  <version>1.5.1.2</version>
+  <version>1.6.0.0</version>
 
   <title>
     <de>EnhancedVehicle</de>
@@ -26,7 +26,7 @@
     </text>
     <text name="input_TSX_EnhancedVehicle_RD">
       <de>EV: Differentialsperre Hinterachse an/aus</de>
-      <en>EV: Differential lock back axle on/off</en>
+      <en>EV: Differential lock rear axle on/off</en>
     </text>
     <text name="input_TSX_EnhancedVehicle_DM">
       <de>EV: Antriebsmodus wechseln</de>
@@ -52,6 +52,22 @@
       <de>EV: Parkbremse an/aus</de>
       <en>EV: parking brake on/off</en>
     </text>
+    <text name="input_TSX_EnhancedVehicle_AJ_REAR_UPDOWN">
+      <de>EV: Hydraulik hinten hoch/runter</de>
+      <en>EV: rear hydraulic up/down</en>
+    </text>
+    <text name="input_TSX_EnhancedVehicle_AJ_REAR_ONOFF">
+      <de>EV: Hydraulik hinten an/aus</de>
+      <en>EV: rear hydraulic on/off</en>
+    </text>
+    <text name="input_TSX_EnhancedVehicle_AJ_FRONT_UPDOWN">
+      <de>EV: Hydraulik vorne hoch/runter</de>
+      <en>EV: front hydraulic up/down</en>
+    </text>
+    <text name="input_TSX_EnhancedVehicle_AJ_FRONT_ONOFF">
+      <de>EV: Hydraulik vorne an/aus</de>
+      <en>EV: front hydraulic on/off</en>
+    </text>
     <text name="input_TSX_EnhancedVehicle_RESET">
       <de>EV: HUD zurücksetzen</de>
       <en>EV: reset HUD</en>
@@ -63,16 +79,20 @@
   </l10n>
 
   <actions>
-    <action name="TSX_EnhancedVehicle_FD"             category="VEHICLE"/>
-    <action name="TSX_EnhancedVehicle_RD"             category="VEHICLE"/>
-    <action name="TSX_EnhancedVehicle_DM"             category="VEHICLE"/>
-    <action name="TSX_EnhancedVehicle_SHUTTLE_ONOFF"  category="VEHICLE"/>
-    <action name="TSX_EnhancedVehicle_SHUTTLE_SWITCH" category="VEHICLE"/>
-    <action name="TSX_EnhancedVehicle_SHUTTLE_FWD"    category="VEHICLE"/>
-    <action name="TSX_EnhancedVehicle_SHUTTLE_REV"    category="VEHICLE"/>
-    <action name="TSX_EnhancedVehicle_SHUTTLE_PARK"   category="VEHICLE"/>
-    <action name="TSX_EnhancedVehicle_RESET"          category="VEHICLE"/>
-    <action name="TSX_EnhancedVehicle_RELOAD"         category="VEHICLE"/>
+    <action name="TSX_EnhancedVehicle_FD"              category="VEHICLE"/>
+    <action name="TSX_EnhancedVehicle_RD"              category="VEHICLE"/>
+    <action name="TSX_EnhancedVehicle_DM"              category="VEHICLE"/>
+    <action name="TSX_EnhancedVehicle_SHUTTLE_ONOFF"   category="VEHICLE"/>
+    <action name="TSX_EnhancedVehicle_SHUTTLE_SWITCH"  category="VEHICLE"/>
+    <action name="TSX_EnhancedVehicle_SHUTTLE_FWD"     category="VEHICLE"/>
+    <action name="TSX_EnhancedVehicle_SHUTTLE_REV"     category="VEHICLE"/>
+    <action name="TSX_EnhancedVehicle_SHUTTLE_PARK"    category="VEHICLE"/>
+    <action name="TSX_EnhancedVehicle_AJ_REAR_UPDOWN"  category="VEHICLE"/>
+    <action name="TSX_EnhancedVehicle_AJ_REAR_ONOFF"   category="VEHICLE"/>
+    <action name="TSX_EnhancedVehicle_AJ_FRONT_UPDOWN" category="VEHICLE"/>
+    <action name="TSX_EnhancedVehicle_AJ_FRONT_ONOFF"  category="VEHICLE"/>
+    <action name="TSX_EnhancedVehicle_RESET"           category="VEHICLE"/>
+    <action name="TSX_EnhancedVehicle_RELOAD"          category="VEHICLE"/>
 <!--
     <action name="TSX_DBG1_UP"   category="VEHICLE"/>
     <action name="TSX_DBG1_DOWN" category="VEHICLE"/>
@@ -107,6 +127,18 @@
     </actionBinding>
     <actionBinding action="TSX_EnhancedVehicle_SHUTTLE_PARK">
       <binding device="KB_MOUSE_DEFAULT" input="KEY_end" axisComponent="+" inputComponent="+" index="2"/>
+    </actionBinding>
+    <actionBinding action="TSX_EnhancedVehicle_AJ_REAR_UPDOWN">
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_1" axisComponent="+" inputComponent="+" index="2"/>
+    </actionBinding>
+    <actionBinding action="TSX_EnhancedVehicle_AJ_REAR_ONOFF">
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_2" axisComponent="+" inputComponent="+" index="2"/>
+    </actionBinding>
+    <actionBinding action="TSX_EnhancedVehicle_AJ_FRONT_UPDOWN">
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_3" axisComponent="+" inputComponent="+" index="2"/>
+    </actionBinding>
+    <actionBinding action="TSX_EnhancedVehicle_AJ_FRONT_ONOFF">
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_4" axisComponent="+" inputComponent="+" index="2"/>
     </actionBinding>
     <actionBinding action="TSX_EnhancedVehicle_RESET">
       <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_divide" axisComponent="+" inputComponent="+" index="2"/>
