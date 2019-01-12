@@ -12,6 +12,7 @@ CHANGELOG
 2019-01-11 - V1.5.1.2
 * (shuttle shift) better integration with keyboardSteer. backward looking camera should work again
 * (shuttle shift) changed behavior: when vehicle moves (without throttle) and opposite direction is selected it will brake
+* (shuttle shift) bugfix for those damn vehicles with build-in reverse driving mechanism
 
 2019-01-10 - V1.5.1.1
 * (shuttle shift) bugfix for shuttle not working when a device with own motor is attached (like the big woodcutter)
@@ -1126,7 +1127,7 @@ function TSX_EnhancedVehicle:updateWheelsPhysics( originalFunction, dt, currentS
       -- are we driving backwards?
       if currentSpeed <= -0.0003 then
         reverseLights = true
-        if self.vData.is[4] then
+        if (self.vData.is[4] and self.spec_drivable.reverserDirection == 1) or (not self.vData.is[4] and self.spec_drivable.reverserDirection == 1) then
           acceleration = 0
           currentSpeed = 0
           brakeLights = true
@@ -1138,7 +1139,7 @@ function TSX_EnhancedVehicle:updateWheelsPhysics( originalFunction, dt, currentS
       end
       -- are we driving forwards?
       if currentSpeed >= 0.0003 then
-        if not self.vData.is[4] then
+        if (not self.vData.is[4] and self.spec_drivable.reverserDirection == -1) or (self.vData.is[4] and self.spec_drivable.reverserDirection == -1) then
           acceleration = 0
           currentSpeed = 0
           brakeLights = true
@@ -1160,13 +1161,13 @@ function TSX_EnhancedVehicle:updateWheelsPhysics( originalFunction, dt, currentS
         -- don't make vehicle go in old behavior (drive reverse when pressing "back" key)
         if acceleration < -0.001 then
           if self.vData.is[4] and currentSpeed <= 0.0003 then
---            print("NO FWD "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
+            print("NO FWD "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
             acceleration = 0
             currentSpeed = 0
             brakeLights = true
           end
           if not self.vData.is[4] and currentSpeed >= -0.0003 then
---            print("NO RWS "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
+            print("NO RWS "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
             acceleration = 0
             currentSpeed = 0
             brakeLights = true
