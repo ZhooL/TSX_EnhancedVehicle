@@ -65,18 +65,22 @@
     <text name="input_TSX_EnhancedVehicle_AJ_REAR_UPDOWN">
       <de>EV: Hydraulik hinten hoch/runter</de>
       <en>EV: rear hydraulic up/down</en>
+      <fr>EV: Lever/baisser le relevage arrière</fr>
     </text>
     <text name="input_TSX_EnhancedVehicle_AJ_REAR_ONOFF">
       <de>EV: Hydraulik hinten an/aus</de>
       <en>EV: rear hydraulic on/off</en>
+      <fr>EV: Relevage arrière on/off</fr>
     </text>
     <text name="input_TSX_EnhancedVehicle_AJ_FRONT_UPDOWN">
       <de>EV: Hydraulik vorne hoch/runter</de>
       <en>EV: front hydraulic up/down</en>
+      <fr>EV: Lever/baisser le relevage avant</fr>
     </text>
     <text name="input_TSX_EnhancedVehicle_AJ_FRONT_ONOFF">
       <de>EV: Hydraulik vorne an/aus</de>
       <en>EV: front hydraulic on/off</en>
+      <fr>EV: Relevage avant on/off</fr>
     </text>
     <text name="input_TSX_EnhancedVehicle_RESET">
       <de>EV: HUD zurücksetzen</de>

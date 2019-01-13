@@ -12,6 +12,7 @@ CHANGELOG
 2019-01-13 - V1.6.0.1
 + added french translation (thanks boloss)
 * changed the way the hydraulic stuff works. should now work on most machinery
+* fixed a nasty bug preventing shuttle shift to work if vehicle has stuff attached
 
 2019-01-12 - V1.6.0.0
 + implemented four new keybindings for hydraulic front+rear up/down and on/off (default: lAlt+1 to 4)
@@ -1030,6 +1031,7 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
   end
 
   -- change driving direction
+  print(actionName)
   if actionName == "TSX_EnhancedVehicle_SHUTTLE_SWITCH" and self.vData.is[5] and not self.vData.is[6] then
     -- play sound effect
     if TSX_EnhancedVehicle.sounds["shifter"] ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
@@ -1083,7 +1085,7 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
 
   -- rear hydraulic up/down
   if actionName == "TSX_EnhancedVehicle_AJ_REAR_UPDOWN" then
-    TSX_EnhancedVehicle:getAttachments(self)
+    TSX_EnhancedVehicle:enumerateAttachments(self)
 
     -- first the joints itsself
     local _updown = nil
@@ -1106,7 +1108,7 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
 
   -- front hydraulic up/down
   if actionName == "TSX_EnhancedVehicle_AJ_FRONT_UPDOWN" then
-    TSX_EnhancedVehicle:getAttachments(self)
+    TSX_EnhancedVehicle:enumerateAttachments(self)
 
     -- first the joints itsself
     local _updown = nil
@@ -1129,7 +1131,7 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
 
   -- rear hydraulic on/off
   if actionName == "TSX_EnhancedVehicle_AJ_REAR_ONOFF" then
-    TSX_EnhancedVehicle:getAttachments(self)
+    TSX_EnhancedVehicle:enumerateAttachments(self)
 
     for _, object in pairs(implements_back) do
       -- can it be turned off and on again
@@ -1152,7 +1154,7 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
 
   -- front hydraulic on/off
   if actionName == "TSX_EnhancedVehicle_AJ_FRONT_ONOFF" then
-    TSX_EnhancedVehicle:getAttachments(self)
+    TSX_EnhancedVehicle:enumerateAttachments(self)
 
     for _, object in pairs(implements_front) do
       -- can it be turned off and on again
@@ -1222,7 +1224,7 @@ end
 
 -- #############################################################################
 
-function TSX_EnhancedVehicle:getAttachments2(rootNode, obj)
+function TSX_EnhancedVehicle:enumerateAttachments2(rootNode, obj)
   if debug > 1 then print("entering: "..obj.rootNode) end
 
   local idx, attacherJoint
@@ -1257,7 +1259,7 @@ function TSX_EnhancedVehicle:getAttachments2(rootNode, obj)
       -- when it has joints by itsself then recursive into them
       if implement.object.spec_attacherJoints ~= nil then
         if debug > 1 then print("go into recursive:"..obj.rootNode) end
-        TSX_EnhancedVehicle:getAttachments2(rootNode, implement.object)
+        TSX_EnhancedVehicle:enumerateAttachments2(rootNode, implement.object)
       end
 
     end
@@ -1267,15 +1269,14 @@ end
 
 -- #############################################################################
 
-function TSX_EnhancedVehicle:getAttachments(obj)
+function TSX_EnhancedVehicle:enumerateAttachments(obj)
   joints_front = {}
   joints_back = {}
   implements_front = {}
   implements_back = {}
 
   -- assemble a list of all attachments
-  TSX_EnhancedVehicle:getAttachments2(obj.rootNode, obj)
-
+  TSX_EnhancedVehicle:enumerateAttachments2(obj.rootNode, obj)
 end
 
 -- #############################################################################
