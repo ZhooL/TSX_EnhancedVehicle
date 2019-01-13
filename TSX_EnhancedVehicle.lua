@@ -3,11 +3,15 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 12.01.2019
--- @Version: 1.6.0.0
+-- @Date: 13.01.2019
+-- @Version: 1.6.0.1
 
 --[[
 CHANGELOG
+
+2019-01-13 - V1.6.0.1
++ added french translation (thanks boloss)
+* changed the way the hydraulic stuff works. should now work on most machinery
 
 2019-01-12 - V1.6.0.0
 + implemented four new keybindings for hydraulic front+rear up/down and on/off (default: lAlt+1 to 4)
@@ -1081,6 +1085,7 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
   if actionName == "TSX_EnhancedVehicle_AJ_REAR_UPDOWN" then
     TSX_EnhancedVehicle:getAttachments(self)
 
+    -- first the joints itsself
     local _updown = nil
     for _, _v in pairs(joints_back) do
       if _updown == nil then
@@ -1089,12 +1094,21 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
       _v[1].spec_attacherJoints.setJointMoveDown(_v[1], _v[2], _updown)
       if debug > 1 then print("--> rear up/down: ".._v[1].rootNode.."/".._v[2].."/"..tostring(_updown) ) end
     end
+
+    -- then the attached devices
+    for _, object in pairs(implements_back) do
+      if object.spec_attachable ~= nil then
+        object.spec_attachable.setLoweredAll(object, _updown)
+        if debug > 1 then print("--> rear up/down: "..object.rootNode.."/"..tostring(_updown) ) end
+      end
+    end
   end
 
   -- front hydraulic up/down
   if actionName == "TSX_EnhancedVehicle_AJ_FRONT_UPDOWN" then
     TSX_EnhancedVehicle:getAttachments(self)
 
+    -- first the joints itsself
     local _updown = nil
     for _, _v in pairs(joints_front) do
       if _updown == nil then
@@ -1103,6 +1117,14 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
       _v[1].spec_attacherJoints.setJointMoveDown(_v[1], _v[2], _updown)
       if debug > 1 then print("--> front up/down: ".._v[1].rootNode.."/".._v[2].."/"..tostring(_updown) ) end
     end
+
+    -- then the attached devices
+    for _, object in pairs(implements_front) do
+      if object.spec_attachable ~= nil then
+        object.spec_attachable.setLoweredAll(object, _updown)
+        if debug > 1 then print("--> front up/down: "..object.rootNode.."/"..tostring(_updown) ) end
+      end
+    end
   end
 
   -- rear hydraulic on/off
@@ -1110,19 +1132,21 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
     TSX_EnhancedVehicle:getAttachments(self)
 
     for _, object in pairs(implements_back) do
-      -- new onoff status
-      local _onoff = nil
-      if _onoff == nil then
-        _onoff = not object.spec_turnOnVehicle.isTurnedOn
-      end
-      if _onoff and object.spec_turnOnVehicle.requiresMotorTurnOn and self.spec_motorized and not self.spec_motorized:getIsOperating() then
-        _onoff = false
-      end
+      -- can it be turned off and on again
+      if object.spec_turnOnVehicle ~= nil then
+        -- new onoff status
+        local _onoff = nil
+        if _onoff == nil then
+          _onoff = not object.spec_turnOnVehicle.isTurnedOn
+        end
+        if _onoff and object.spec_turnOnVehicle.requiresMotorTurnOn and self.spec_motorized and not self.spec_motorized:getIsOperating() then
+          _onoff = false
+        end
 
-      -- set new onoff status
-      object.spec_turnOnVehicle.setIsTurnedOn(object, _onoff)
-
-      if debug > 1 then print("--> rear on/off: "..object.rootNode.."/"..tostring(_onoff)) end
+        -- set new onoff status
+        object.spec_turnOnVehicle.setIsTurnedOn(object, _onoff)
+        if debug > 1 then print("--> rear on/off: "..object.rootNode.."/"..tostring(_onoff)) end
+      end
     end
   end
 
@@ -1131,19 +1155,22 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
     TSX_EnhancedVehicle:getAttachments(self)
 
     for _, object in pairs(implements_front) do
-      -- new onoff status
-      local _onoff = nil
-      if _onoff == nil then
-        _onoff = not object.spec_turnOnVehicle.isTurnedOn
-      end
-      if _onoff and object.spec_turnOnVehicle.requiresMotorTurnOn and self.spec_motorized and not self.spec_motorized:getIsOperating() then
-        _onoff = false
-      end
+      -- can it be turned off and on again
+      if object.spec_turnOnVehicle ~= nil then
+        -- new onoff status
+        local _onoff = nil
+        if _onoff == nil then
+          _onoff = not object.spec_turnOnVehicle.isTurnedOn
+        end
+        if _onoff and object.spec_turnOnVehicle.requiresMotorTurnOn and self.spec_motorized and not self.spec_motorized:getIsOperating() then
+          _onoff = false
+        end
 
-      -- set new onoff status
-      object.spec_turnOnVehicle.setIsTurnedOn(object, _onoff)
+        -- set new onoff status
+        object.spec_turnOnVehicle.setIsTurnedOn(object, _onoff)
 
-      if debug > 1 then print("--> front on/off: "..object.rootNode.."/"..tostring(_onoff)) end
+        if debug > 1 then print("--> front on/off: "..object.rootNode.."/"..tostring(_onoff)) end
+      end
     end
   end
 
@@ -1196,8 +1223,11 @@ end
 -- #############################################################################
 
 function TSX_EnhancedVehicle:getAttachments2(rootNode, obj)
+  if debug > 1 then print("entering: "..obj.rootNode) end
+
   local idx, attacherJoint
   local relX, relY, relZ
+
   for idx, attacherJoint in pairs(obj.spec_attacherJoints.attacherJoints) do
     -- position relative to our vehicle
     local x, y, z = getWorldTranslation(attacherJoint.jointTransform)
@@ -1216,8 +1246,7 @@ function TSX_EnhancedVehicle:getAttachments2(rootNode, obj)
 
     -- what is attached here?
     local implement = obj.spec_attacherJoints:getImplementByJointDescIndex(idx)
-    -- can it be turned off and on again? ;-)
-    if implement ~= nil and implement.object ~= nil and implement.object.spec_turnOnVehicle ~= nil then
+    if implement ~= nil and implement.object ~= nil then
       if relZ > 0 then -- front
         table.insert(implements_front, implement.object)
       end
@@ -1227,11 +1256,13 @@ function TSX_EnhancedVehicle:getAttachments2(rootNode, obj)
 
       -- when it has joints by itsself then recursive into them
       if implement.object.spec_attacherJoints ~= nil then
+        if debug > 1 then print("go into recursive:"..obj.rootNode) end
         TSX_EnhancedVehicle:getAttachments2(rootNode, implement.object)
       end
 
     end
   end
+  if debug > 1 then print("leaving: "..obj.rootNode) end
 end
 
 -- #############################################################################

@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="40">
   <author>ZhooL</author>
-  <contributors>Continuum, Toryius</contributors>
+  <contributors>Continuum, Toryius, boloss</contributors>
 
-  <version>1.6.0.0</version>
+  <version>1.6.0.1</version>
 
   <title>
     <de>EnhancedVehicle</de>
     <en>EnhancedVehicle</en>
+    <fr>EnhancedVehicle</fr>
   </title>
 
   <description>
     <de><![CDATA[Differentialsperren und Antriebsmodi für dein Fahrzeug. Mehr Fahrzeugsdetails im HUD.]]></de>
     <en><![CDATA[Differential locks and wheel drive modes for your vehicle. Shows more vehicle details on HUD.]]></en>
+    <fr><![CDATA[Blocages de différentiel et modes de traction des roues pour votre véhicule. Affiche plus de détails sur les véhicules sur le HUD.]]></fr> 
   </description>
 
   <iconFilename>TSX_EnhancedVehicle.dds</iconFilename>
@@ -23,34 +25,42 @@
     <text name="input_TSX_EnhancedVehicle_FD">
       <de>EV: Differentialsperre Vorderachse an/aus</de>
       <en>EV: Differential lock front axle on/off</en>
+      <fr>EV: Verrouillage du différentiel essieu avant on/off</fr>
     </text>
     <text name="input_TSX_EnhancedVehicle_RD">
       <de>EV: Differentialsperre Hinterachse an/aus</de>
       <en>EV: Differential lock rear axle on/off</en>
+      <fr>EV: Verrouillage du différentiel essieu arrière on/off</fr>
     </text>
     <text name="input_TSX_EnhancedVehicle_DM">
       <de>EV: Antriebsmodus wechseln</de>
       <en>EV: Change wheel drive mode</en>
+      <fr>EV: Changer le mode de traction des roues</fr>
     </text>
     <text name="input_TSX_EnhancedVehicle_SHUTTLE_ONOFF">
       <de>EV: Wendeschaltung an/aus</de>
       <en>EV: Turn driving direction changer on/off</en>
+      <fr>EV: Inverseur de sens de marche on/off</fr>
     </text>
     <text name="input_TSX_EnhancedVehicle_SHUTTLE_SWITCH">
       <de>EV: Fahrrichtung wechseln</de>
       <en>EV: Change driving direction</en>
+      <fr>EV: Changer le sens de marche</fr>
     </text>
     <text name="input_TSX_EnhancedVehicle_SHUTTLE_FWD">
       <de>EV: Fahrrichtung vorwärts</de>
       <en>EV: forward driving direction</en>
+      <fr>EV: Marche avant</fr>
     </text>
     <text name="input_TSX_EnhancedVehicle_SHUTTLE_REV">
       <de>EV: Fahrrichtung rückwärts</de>
       <en>EV: reverse driving direction</en>
+      <fr>EV: Marche arrière</fr>
     </text>
     <text name="input_TSX_EnhancedVehicle_SHUTTLE_PARK">
       <de>EV: Parkbremse an/aus</de>
       <en>EV: parking brake on/off</en>
+      <fr>EV: Frein de stationnement on/off</fr>
     </text>
     <text name="input_TSX_EnhancedVehicle_AJ_REAR_UPDOWN">
       <de>EV: Hydraulik hinten hoch/runter</de>
@@ -71,10 +81,12 @@
     <text name="input_TSX_EnhancedVehicle_RESET">
       <de>EV: HUD zurücksetzen</de>
       <en>EV: reset HUD</en>
+      <fr>EV: Réinitialiser le HUD</fr>
     </text>
     <text name="input_TSX_EnhancedVehicle_RELOAD">
       <de>EV: XML Konfigurationsdatei neu laden</de>
       <en>EV: reload XML config file</en>
+      <fr>EV: Recharger le fichier de config XML</fr>
     </text>
   </l10n>
 
