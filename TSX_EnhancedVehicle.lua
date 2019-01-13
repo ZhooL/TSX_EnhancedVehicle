@@ -13,6 +13,7 @@ CHANGELOG
 + added french translation (thanks boloss)
 * changed the way the hydraulic stuff works. should now work on most machinery
 * fixed a nasty bug preventing shuttle shift to work if vehicle has stuff attached
+* another change in integration of keyboardSteer camera stuff
 
 2019-01-12 - V1.6.0.0
 + implemented four new keybindings for hydraulic front+rear up/down and on/off (default: lAlt+1 to 4)
@@ -1298,7 +1299,9 @@ function TSX_EnhancedVehicle:updateWheelsPhysics( originalFunction, dt, currentS
         end
         if ksm_loaded then
           self.ksmMovingDir = -1
-          self:ksmSetState( "ksmCamFwd", false )
+          if self.ksmReverseIsOn then
+            self:ksmSetState( "ksmCamFwd", false )
+          end
         end
       end
       -- are we driving forwards?
@@ -1310,7 +1313,9 @@ function TSX_EnhancedVehicle:updateWheelsPhysics( originalFunction, dt, currentS
         end
         if ksm_loaded then
           self.ksmMovingDir = 1
-          self:ksmSetState( "ksmCamFwd", true )
+          if self.ksmReverseIsOn then
+            self:ksmSetState( "ksmCamFwd", true )
+          end
         end
       end
       -- parkBreakIsOn
