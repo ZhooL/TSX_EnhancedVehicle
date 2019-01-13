@@ -1,7 +1,7 @@
 # TSX_EnhancedVehicle
 This is a Mod for Farming Simulator 19. It adds shuttle shift, differential locks, wheel drive modes and improved hydraulics controls to your vehicle. It shows more vehicle details on the HUD also.<br>
 <br>
-** NOTE: The only source of truth is: https://github.com/ZhooL/TSX_EnhancedVehicle. The second valid download location is: https://www.modhoster.de/mods/enhancedvehicle. All other download locations are not validated by me - so handle with care.**<br>
+**NOTE: The only source of truth is: https://github.com/ZhooL/TSX_EnhancedVehicle. The second valid download location is: https://www.modhoster.de/mods/enhancedvehicle. All other download locations are not validated by me - so handle with care.**<br>
 <br>
 *(c) 2018-2019 by ZhooL. Be so kind to credit me when using this mod or the source code (or parts of it) somewhere.*<br>
 license: https://creativecommons.org/licenses/by-nc-sa/4.0/
