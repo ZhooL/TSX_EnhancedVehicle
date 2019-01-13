@@ -121,65 +121,65 @@
 
   <inputBinding>
     <actionBinding action="TSX_EnhancedVehicle_FD">
-      <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_7" axisComponent="+" inputComponent="+" index="2"/>
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_7" axisComponent="+" inputComponent="+" index="1"/>
     </actionBinding>
     <actionBinding action="TSX_EnhancedVehicle_RD">
-      <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_8" axisComponent="+" inputComponent="+" index="2"/>
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_8" axisComponent="+" inputComponent="+" index="1"/>
     </actionBinding>
     <actionBinding action="TSX_EnhancedVehicle_DM">
-      <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_9" axisComponent="+" inputComponent="+" index="2"/>
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_9" axisComponent="+" inputComponent="+" index="1"/>
     </actionBinding>
     <actionBinding action="TSX_EnhancedVehicle_SHUTTLE_ONOFF">
-      <binding device="KB_MOUSE_DEFAULT" input="KEY_lctrl KEY_space" axisComponent="+" inputComponent="+" index="2"/>
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_lctrl KEY_space" axisComponent="+" inputComponent="+" index="1"/>
     </actionBinding>
     <actionBinding action="TSX_EnhancedVehicle_SHUTTLE_SWITCH">
-      <binding device="KB_MOUSE_DEFAULT" input="KEY_space" axisComponent="+" inputComponent="+" index="2"/>
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_space" axisComponent="+" inputComponent="+" index="1"/>
     </actionBinding>
     <actionBinding action="TSX_EnhancedVehicle_SHUTTLE_FWD">
-      <binding device="KB_MOUSE_DEFAULT" input="KEY_insert" axisComponent="+" inputComponent="+" index="2"/>
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_insert" axisComponent="+" inputComponent="+" index="1"/>
     </actionBinding>
     <actionBinding action="TSX_EnhancedVehicle_SHUTTLE_REV">
-      <binding device="KB_MOUSE_DEFAULT" input="KEY_delete" axisComponent="+" inputComponent="+" index="2"/>
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_delete" axisComponent="+" inputComponent="+" index="1"/>
     </actionBinding>
     <actionBinding action="TSX_EnhancedVehicle_SHUTTLE_PARK">
-      <binding device="KB_MOUSE_DEFAULT" input="KEY_end" axisComponent="+" inputComponent="+" index="2"/>
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_end" axisComponent="+" inputComponent="+" index="1"/>
     </actionBinding>
     <actionBinding action="TSX_EnhancedVehicle_AJ_REAR_UPDOWN">
-      <binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_1" axisComponent="+" inputComponent="+" index="2"/>
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_1" axisComponent="+" inputComponent="+" index="1"/>
     </actionBinding>
     <actionBinding action="TSX_EnhancedVehicle_AJ_REAR_ONOFF">
-      <binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_2" axisComponent="+" inputComponent="+" index="2"/>
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_2" axisComponent="+" inputComponent="+" index="1"/>
     </actionBinding>
     <actionBinding action="TSX_EnhancedVehicle_AJ_FRONT_UPDOWN">
-      <binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_3" axisComponent="+" inputComponent="+" index="2"/>
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_3" axisComponent="+" inputComponent="+" index="1"/>
     </actionBinding>
     <actionBinding action="TSX_EnhancedVehicle_AJ_FRONT_ONOFF">
-      <binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_4" axisComponent="+" inputComponent="+" index="2"/>
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_4" axisComponent="+" inputComponent="+" index="1"/>
     </actionBinding>
     <actionBinding action="TSX_EnhancedVehicle_RESET">
-      <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_divide" axisComponent="+" inputComponent="+" index="2"/>
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_divide" axisComponent="+" inputComponent="+" index="1"/>
     </actionBinding>
     <actionBinding action="TSX_EnhancedVehicle_RELOAD">
-      <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_multiply" axisComponent="+" inputComponent="+" index="2"/>
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_multiply" axisComponent="+" inputComponent="+" index="1"/>
     </actionBinding>
 <!--
     <actionBinding action="TSX_DBG1_UP">
-      <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_4" axisComponent="+" inputComponent="+" index="2"/>
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_4" axisComponent="+" inputComponent="+" index="1"/>
     </actionBinding>
     <actionBinding action="TSX_DBG1_DOWN">
-      <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_1" axisComponent="+" inputComponent="+" index="2"/>
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_1" axisComponent="+" inputComponent="+" index="1"/>
     </actionBinding>
     <actionBinding action="TSX_DBG2_UP">
-      <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_5" axisComponent="+" inputComponent="+" index="2"/>
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_5" axisComponent="+" inputComponent="+" index="1"/>
     </actionBinding>
     <actionBinding action="TSX_DBG2_DOWN">
-      <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_2" axisComponent="+" inputComponent="+" index="2"/>
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_2" axisComponent="+" inputComponent="+" index="1"/>
     </actionBinding>
     <actionBinding action="TSX_DBG3_UP">
-      <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_6" axisComponent="+" inputComponent="+" index="2"/>
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_6" axisComponent="+" inputComponent="+" index="1"/>
     </actionBinding>
     <actionBinding action="TSX_DBG3_DOWN">
-      <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_3" axisComponent="+" inputComponent="+" index="2"/>
+      <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_3" axisComponent="+" inputComponent="+" index="1"/>
     </actionBinding>
 -->
   </inputBinding>

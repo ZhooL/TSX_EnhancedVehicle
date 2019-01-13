@@ -12,7 +12,7 @@ CHANGELOG
 2019-01-13 - V1.6.0.1
 + added french translation (thanks boloss)
 * changed the way the hydraulic stuff works. should now work on most machinery
-* fixed a nasty bug preventing shuttle shift to work if vehicle has stuff attached
+* changed how we setup actionEvents and InputBindungs
 * another change in integration of keyboardSteer camera stuff
 
 2019-01-12 - V1.6.0.0
@@ -949,16 +949,10 @@ function TSX_EnhancedVehicle:onRegisterActionEvents(isSelected, isOnActiveVehicl
 
   -- only in active vehicle and when we control it
   if isOnActiveVehicle and self:getIsControlled() then
-    -- we could have more than one event, so prepare a table to store them
-    if self.ActionEvents == nil then
-      self.ActionEvents = {}
-    else
-      self:clearActionEventsTable( self.ActionEvents )
-    end
 
     -- attach our actions
     for _ ,actionName in pairs(TSX_EnhancedVehicle.actions) do
-      local _, eventName = self:addActionEvent(self.ActionEvents, InputAction[actionName], self, TSX_EnhancedVehicle.onActionCall, false, true, false, true, nil)
+      local _, eventName = InputBinding.registerActionEvent(g_inputBinding, actionName, self, TSX_EnhancedVehicle.onActionCall, false, true, false, true)
       -- help menu priorization
       if g_inputBinding ~= nil and g_inputBinding.events ~= nil and g_inputBinding.events[eventName] ~= nil then
         g_inputBinding.events[eventName].displayPriority = 98
