@@ -1031,7 +1031,6 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
   end
 
   -- change driving direction
-  print(actionName)
   if actionName == "TSX_EnhancedVehicle_SHUTTLE_SWITCH" and self.vData.is[5] and not self.vData.is[6] then
     -- play sound effect
     if TSX_EnhancedVehicle.sounds["shifter"] ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
