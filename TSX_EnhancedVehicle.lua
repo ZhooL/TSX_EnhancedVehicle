@@ -1178,8 +1178,6 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
 
   -- reset config
   if actionName == "TSX_EnhancedVehicle_RESET" then
---print(DebugUtil.printTableRecursively(self.spec_attacherJoints, 0, 0, 3))
-
     TSX_EnhancedVehicle:resetConfig()
     lC:writeConfig()
     TSX_EnhancedVehicle:activateConfig()

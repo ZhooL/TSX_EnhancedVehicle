@@ -1,5 +1,7 @@
 # TSX_EnhancedVehicle
-This is a Mod for Farming Simulator 19. It adds shuttle shift, differential locks and wheel drive modes to your vehicle. It shows more vehicle details on the HUD also.<br>
+This is a Mod for Farming Simulator 19. It adds shuttle shift, differential locks, wheel drive modes and improved hydraulics controls to your vehicle. It shows more vehicle details on the HUD also.<br>
+<br>
+** NOTE: The only source of truth is: https://github.com/ZhooL/TSX_EnhancedVehicle. The second valid download location is: https://www.modhoster.de/mods/enhancedvehicle. All other download locations are not validated by me - so handle with care.**<br>
 <br>
 *(c) 2018-2019 by ZhooL. Be so kind to credit me when using this mod or the source code (or parts of it) somewhere.*<br>
 license: https://creativecommons.org/licenses/by-nc-sa/4.0/
@@ -14,10 +16,14 @@ license: https://creativecommons.org/licenses/by-nc-sa/4.0/
 * KeyPad 9 - switch wheel drive mode between 4WD (four wheel drive) or 2WD (two wheel drive)
 * KeyPad / - reset mods HUD elements to its default position. use this if you messed up the config or changed the GUI scale
 * KeyPad * - reload XML config from disk to show modifications immediately without restarting the complete game
+* lALT+1 - rear attached devices up/down
+* lALT+2 - rear attached devices on/off
+* lALT+3 - front attached devices up/down
+* lALT+4 - front attached devices on/off
 
 ## what this mod does
 * when the game starts, it changes all "motorized" and "controllable" vehicles on the map to default settings: wheel drive mode to "all-wheel (4WD)" and deactivation of both differentials
-* add a shuttle shift functionality. if enabled you have to select a driving direction and vehicle will only drive in that direction if acceleration key is pressed
+* add a shuttle shift (incl. parking brake) functionality. if enabled you have to select a driving direction and vehicle will only drive in that direction if acceleration key is pressed
 * on HUD it displays a indicator display for shuttle shift status
 * on HUD it displays damage values in % for controlled vehicle and all its attachments
 * on HUD it displays fuel fill level for Diesel and AdBlue and the current fuel usage rate<br>
