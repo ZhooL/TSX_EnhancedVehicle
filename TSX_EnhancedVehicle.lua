@@ -3,11 +3,14 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 13.01.2019
--- @Version: 1.6.0.1
+-- @Date: 14.01.2019
+-- @Version: 1.6.0.2
 
 --[[
 CHANGELOG
+
+2019-01-14 - V1.6.0.2
+* adapt keyboardSteer integration to new version
 
 2019-01-13 - V1.6.0.1
 + added french translation (thanks boloss)
@@ -442,9 +445,10 @@ end
 function TSX_EnhancedVehicle:onUpdate(dt)
   if debug > 2 then print("-> " .. myName .. ": onUpdate " .. dt .. ", S: " .. tostring(self.isServer) .. ", C: " .. tostring(self.isClient) .. mySelf(self)) end
 
-  -- hack for keyboardSteer
+  -- keyboardSteer integration
   if ksm_loaded then
     self.ksmShuttleIsOn = false  -- turn off shuttle control of keyboardSteer
+    self.ksmShuttleCtrl = false  -- turn off shuttle control of keyboardSteer
     self.ksmReverserDirection = nil  -- delete driving direction variable of keyboardSteer
   end
 
