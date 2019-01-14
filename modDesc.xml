@@ -3,7 +3,7 @@
   <author>ZhooL</author>
   <contributors>Continuum, Toryius, boloss</contributors>
 
-  <version>1.6.0.2</version>
+  <version>1.6.1.0</version>
 
   <title>
     <de>EnhancedVehicle</de>
@@ -31,6 +31,10 @@
       <de>EV: Differentialsperre Hinterachse an/aus</de>
       <en>EV: Differential lock rear axle on/off</en>
       <fr>EV: Verrouillage du différentiel essieu arrière on/off</fr>
+    </text>
+    <text name="input_TSX_EnhancedVehicle_BD">
+      <de>EV: Beide Differentialsperren an/aus</de>
+      <en>EV: Both differential locks on/off</en>
     </text>
     <text name="input_TSX_EnhancedVehicle_DM">
       <de>EV: Antriebsmodus wechseln</de>
@@ -97,6 +101,7 @@
   <actions>
     <action name="TSX_EnhancedVehicle_FD"              category="VEHICLE"/>
     <action name="TSX_EnhancedVehicle_RD"              category="VEHICLE"/>
+    <action name="TSX_EnhancedVehicle_BD"              category="VEHICLE"/>
     <action name="TSX_EnhancedVehicle_DM"              category="VEHICLE"/>
     <action name="TSX_EnhancedVehicle_SHUTTLE_ONOFF"   category="VEHICLE"/>
     <action name="TSX_EnhancedVehicle_SHUTTLE_SWITCH"  category="VEHICLE"/>
@@ -125,6 +130,9 @@
     </actionBinding>
     <actionBinding action="TSX_EnhancedVehicle_RD">
       <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_8" axisComponent="+" inputComponent="+" index="2"/>
+    </actionBinding>
+    <actionBinding action="TSX_EnhancedVehicle_BD">
+      <binding device="KB_MOUSE_DEFAULT" input="" axisComponent="+" inputComponent="+" index="2"/>
     </actionBinding>
     <actionBinding action="TSX_EnhancedVehicle_DM">
       <binding device="KB_MOUSE_DEFAULT" input="KEY_KP_9" axisComponent="+" inputComponent="+" index="2"/>

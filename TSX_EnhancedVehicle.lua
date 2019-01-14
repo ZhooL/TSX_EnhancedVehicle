@@ -4,10 +4,13 @@
 -- Author: ZhooL
 -- email: ls19@dark-world.de
 -- @Date: 14.01.2019
--- @Version: 1.6.0.2
+-- @Version: 1.6.1.0
 
 --[[
 CHANGELOG
+
+2019-01-14 - V1.6.1.0
++ added functionality to turn on/off both differentials the same time (no default keybinding)
 
 2019-01-14 - V1.6.0.2
 * adapt keyboardSteer integration to new version
@@ -123,6 +126,7 @@ end
 TSX_EnhancedVehicle.sections = { 'fuel', 'dmg', 'misc', 'rpm', 'temp', 'diff', 'shuttle' }
 TSX_EnhancedVehicle.actions  = { 'TSX_EnhancedVehicle_FD',
                                  'TSX_EnhancedVehicle_RD',
+                                 'TSX_EnhancedVehicle_BD',
                                  'TSX_EnhancedVehicle_DM',
                                  'TSX_EnhancedVehicle_SHUTTLE_ONOFF',
                                  'TSX_EnhancedVehicle_SHUTTLE_SWITCH',
@@ -1000,6 +1004,20 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
     end
     self.vData.want[2] = not self.vData.want[2]
     if self.isClient and not self.isServer then
+      self.vData.is[2] = self.vData.want[2]
+    end
+    TSX_EnhancedVehicle_Event:sendEvent(self, unpack(self.vData.want))
+  end
+
+  -- both diffs
+  if actionName == "TSX_EnhancedVehicle_BD" then
+    if TSX_EnhancedVehicle.sounds["diff_lock"] ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
+      playSample(TSX_EnhancedVehicle.sounds["diff_lock"], 1, 0.5, 0, 0, 0)
+    end
+    self.vData.want[1] = not self.vData.want[2]
+    self.vData.want[2] = not self.vData.want[2]
+    if self.isClient and not self.isServer then
+      self.vData.is[1] = self.vData.want[2]
       self.vData.is[2] = self.vData.want[2]
     end
     TSX_EnhancedVehicle_Event:sendEvent(self, unpack(self.vData.want))
