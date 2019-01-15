@@ -3,11 +3,16 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 14.01.2019
--- @Version: 1.6.1.0
+-- @Date: 15.01.2019
+-- @Version: 1.6.2.0
 
 --[[
 CHANGELOG
+
+2019-01-15 - V1.6.2.0
+* talked to Mogli12 about compatibility between EV and KS and instead of disabling other mods functions the player (thats you) should decide which mods Shuttle Control/Shift should be used
+  to comply to that EV will no longer disable stuff, but display an annoying warning text on screen to instruct you how to proceed choosing a shuttle control/shift
++ added global options to enable/disable shuttle shift, differentials and hydraulics
 
 2019-01-14 - V1.6.1.0
 + added functionality to turn on/off both differentials the same time (no default keybinding)
@@ -124,21 +129,23 @@ if g_gameSettings.uiScale ~= nil then
   TSX_EnhancedVehicle.uiScale = g_gameSettings.uiScale
 end
 TSX_EnhancedVehicle.sections = { 'fuel', 'dmg', 'misc', 'rpm', 'temp', 'diff', 'shuttle' }
-TSX_EnhancedVehicle.actions  = { 'TSX_EnhancedVehicle_FD',
-                                 'TSX_EnhancedVehicle_RD',
-                                 'TSX_EnhancedVehicle_BD',
-                                 'TSX_EnhancedVehicle_DM',
-                                 'TSX_EnhancedVehicle_SHUTTLE_ONOFF',
-                                 'TSX_EnhancedVehicle_SHUTTLE_SWITCH',
-                                 'TSX_EnhancedVehicle_SHUTTLE_FWD',
-                                 'TSX_EnhancedVehicle_SHUTTLE_REV',
-                                 'TSX_EnhancedVehicle_SHUTTLE_PARK',
-                                 'TSX_EnhancedVehicle_AJ_REAR_UPDOWN',
-                                 'TSX_EnhancedVehicle_AJ_REAR_ONOFF',
-                                 'TSX_EnhancedVehicle_AJ_FRONT_UPDOWN',
-                                 'TSX_EnhancedVehicle_AJ_FRONT_ONOFF',
-                                 'TSX_EnhancedVehicle_RESET',
-                                 'TSX_EnhancedVehicle_RELOAD' }
+TSX_EnhancedVehicle.actions = {}
+TSX_EnhancedVehicle.actions.global =    { 'TSX_EnhancedVehicle_RESET',
+                                          'TSX_EnhancedVehicle_RELOAD' }
+TSX_EnhancedVehicle.actions.diff  =     { 'TSX_EnhancedVehicle_FD',
+                                          'TSX_EnhancedVehicle_RD',
+                                          'TSX_EnhancedVehicle_BD',
+                                          'TSX_EnhancedVehicle_DM' }
+TSX_EnhancedVehicle.actions.shuttle =   { 'TSX_EnhancedVehicle_SHUTTLE_ONOFF',
+                                          'TSX_EnhancedVehicle_SHUTTLE_SWITCH',
+                                          'TSX_EnhancedVehicle_SHUTTLE_FWD',
+                                          'TSX_EnhancedVehicle_SHUTTLE_REV',
+                                          'TSX_EnhancedVehicle_SHUTTLE_PARK' }
+TSX_EnhancedVehicle.actions.hydraulic = { 'TSX_EnhancedVehicle_AJ_REAR_UPDOWN',
+                                          'TSX_EnhancedVehicle_AJ_REAR_ONOFF',
+                                          'TSX_EnhancedVehicle_AJ_FRONT_UPDOWN',
+                                          'TSX_EnhancedVehicle_AJ_FRONT_ONOFF' }
+
 if TSX_dbg then
   for _, v in pairs({ 'TSX_DBG1_UP', 'TSX_DBG1_DOWN', 'TSX_DBG2_UP', 'TSX_DBG2_DOWN', 'TSX_DBG3_UP', 'TSX_DBG3_DOWN' }) do
     table.insert(TSX_EnhancedVehicle.actions, v)
@@ -201,6 +208,11 @@ end
 function TSX_EnhancedVehicle:activateConfig()
   -- here we will "move" our config from the libConfig internal storage to the variables we actually use
 
+  -- functions
+  TSX_EnhancedVehicle.functionShuttleIsEnabled      = lC:getConfigValue("global.functions", "shuttleIsEnabled")
+  TSX_EnhancedVehicle.functionDifferentialIsEnabled = lC:getConfigValue("global.functions", "differentialIsEnabled")
+  TSX_EnhancedVehicle.functionHydraulicIsEnabled    = lC:getConfigValue("global.functions", "hydraulicIsEnabled")
+
   -- globals
   TSX_EnhancedVehicle.fontSize            = lC:getConfigValue("global.text", "fontSize")
   TSX_EnhancedVehicle.textPadding         = lC:getConfigValue("global.text", "textPadding")
@@ -235,8 +247,9 @@ end
 
 -- #############################################################################
 
-function TSX_EnhancedVehicle:resetConfig()
+function TSX_EnhancedVehicle:resetConfig(skip)
   if debug > 0 then print("-> " .. myName .. ": resetConfig ") end
+  skip = false or skip
 
   local _x, _y
 
@@ -259,6 +272,11 @@ function TSX_EnhancedVehicle:resetConfig()
 
   -- start fresh
   lC:clearConfig()
+
+  -- functions
+  lC:addConfigValue("global.functions", "shuttleIsEnabled",      "bool", true)
+  lC:addConfigValue("global.functions", "differentialIsEnabled", "bool", true)
+  lC:addConfigValue("global.functions", "hydraulicIsEnabled",    "bool", true)
 
   -- globals
   lC:addConfigValue("global.text", "fontSize", "float",            0.01)
@@ -449,97 +467,102 @@ end
 function TSX_EnhancedVehicle:onUpdate(dt)
   if debug > 2 then print("-> " .. myName .. ": onUpdate " .. dt .. ", S: " .. tostring(self.isServer) .. ", C: " .. tostring(self.isClient) .. mySelf(self)) end
 
-  -- keyboardSteer integration
-  if ksm_loaded then
-    self.ksmShuttleIsOn = false  -- turn off shuttle control of keyboardSteer
-    self.ksmShuttleCtrl = false  -- turn off shuttle control of keyboardSteer
-    self.ksmReverserDirection = nil  -- delete driving direction variable of keyboardSteer
-  end
-
   -- (server) process changes between "is" and "want"
   if self.isServer and self.vData ~= nil then
 
     -- front diff
     if self.vData.is[1] ~= self.vData.want[1] then
-      if self.vData.want[1] then
-        updateDifferential(self.rootNode, 0, self.vData.torqueRatio[1], 1)
-        if debug > 0 then print("--> ("..self.rootNode..") changed front diff to: ON") end
-      else
-        updateDifferential(self.rootNode, 0, self.vData.torqueRatio[1], self.vData.maxSpeedRatio[1] * 1000)
-        if debug > 0 then print("--> ("..self.rootNode..") changed front diff to: OFF") end
+      if TSX_EnhancedVehicle.functionDifferentialIsEnabled then
+        if self.vData.want[1] then
+          updateDifferential(self.rootNode, 0, self.vData.torqueRatio[1], 1)
+          if debug > 0 then print("--> ("..self.rootNode..") changed front diff to: ON") end
+        else
+          updateDifferential(self.rootNode, 0, self.vData.torqueRatio[1], self.vData.maxSpeedRatio[1] * 1000)
+          if debug > 0 then print("--> ("..self.rootNode..") changed front diff to: OFF") end
+        end
       end
       self.vData.is[1] = self.vData.want[1]
     end
 
     -- back diff
     if self.vData.is[2] ~= self.vData.want[2] then
-      if self.vData.want[2] then
-        updateDifferential(self.rootNode, 1, self.vData.torqueRatio[2], 1)
-        if debug > 0 then print("--> ("..self.rootNode..") changed back diff to: ON") end
-      else
-        updateDifferential(self.rootNode, 1, self.vData.torqueRatio[2], self.vData.maxSpeedRatio[2] * 1000)
-        if debug > 0 then print("--> ("..self.rootNode..") changed back diff to: OFF") end
+      if TSX_EnhancedVehicle.functionDifferentialIsEnabled then
+        if self.vData.want[2] then
+          updateDifferential(self.rootNode, 1, self.vData.torqueRatio[2], 1)
+          if debug > 0 then print("--> ("..self.rootNode..") changed back diff to: ON") end
+        else
+          updateDifferential(self.rootNode, 1, self.vData.torqueRatio[2], self.vData.maxSpeedRatio[2] * 1000)
+          if debug > 0 then print("--> ("..self.rootNode..") changed back diff to: OFF") end
+        end
       end
       self.vData.is[2] = self.vData.want[2]
     end
 
     -- wheel drive mode
     if self.vData.is[3] ~= self.vData.want[3] then
-      if self.vData.want[3] == 0 then
-        updateDifferential(self.rootNode, 2, -0.00001, 1)
-        if debug > 0 then print("--> ("..self.rootNode..") changed wheel drive mode to: 2WD") end
-      elseif self.vData.want[3] == 1 then
-        updateDifferential(self.rootNode, 2, self.vData.torqueRatio[3], 1)
-        if debug > 0 then print("--> ("..self.rootNode..") changed wheel drive mode to: 4WD") end
-      elseif self.vData.want[3] == 2 then
-        updateDifferential(self.rootNode, 2, 1, 0)
-        if debug > 0 then print("--> ("..self.rootNode..") changed wheel drive mode to: FWD") end
+      if TSX_EnhancedVehicle.functionDifferentialIsEnabled then
+        if self.vData.want[3] == 0 then
+          updateDifferential(self.rootNode, 2, -0.00001, 1)
+          if debug > 0 then print("--> ("..self.rootNode..") changed wheel drive mode to: 2WD") end
+        elseif self.vData.want[3] == 1 then
+          updateDifferential(self.rootNode, 2, self.vData.torqueRatio[3], 1)
+          if debug > 0 then print("--> ("..self.rootNode..") changed wheel drive mode to: 4WD") end
+        elseif self.vData.want[3] == 2 then
+          updateDifferential(self.rootNode, 2, 1, 0)
+          if debug > 0 then print("--> ("..self.rootNode..") changed wheel drive mode to: FWD") end
+        end
       end
       self.vData.is[3] = self.vData.want[3]
     end
 
     -- shuttle shift on/off
     if self.vData.is[5] ~= self.vData.want[5] then
-      if self.vData.want[5] then
-        -- force setting of drive direction
-        self.vData.is[4] = not self.vData.want[4]
-        if debug > 0 then print("--> ("..self.rootNode..") changed shuttle shift isOn to: ON") end
-      else
-        -- reset drive direction to normal
-        if self.spec_reverseDriving ~= nil and self.spec_reverseDriving.isReverseDriving ~= nil then
-          self.spec_drivable.reverserDirection = self.spec_reverseDriving.isReverseDriving and -1 or 1
+      if TSX_EnhancedVehicle.functionShuttleIsEnabled then
+        if self.vData.want[5] then
+          -- force setting of drive direction
+          self.vData.is[4] = not self.vData.want[4]
+          if debug > 0 then print("--> ("..self.rootNode..") changed shuttle shift isOn to: ON") end
         else
-          self.spec_drivable.reverserDirection = 1
+          -- reset drive direction to normal
+          if self.spec_reverseDriving ~= nil and self.spec_reverseDriving.isReverseDriving ~= nil then
+            self.spec_drivable.reverserDirection = self.spec_reverseDriving.isReverseDriving and -1 or 1
+          else
+            self.spec_drivable.reverserDirection = 1
+          end
+          if debug > 0 then print("--> ("..self.rootNode..") changed shuttle shift isOn to: OFF") end
         end
-        if debug > 0 then print("--> ("..self.rootNode..") changed shuttle shift isOn to: OFF") end
       end
       self.vData.is[5] = self.vData.want[5]
     end
 
     -- shuttle shift switch direction
     if self.vData.is[4] ~= self.vData.want[4] then
-      if self.vData.want[4] then
-        self.spec_drivable.reverserDirection = 1
-        if debug > 0 then print("--> ("..self.rootNode..") changed shuttle shift isForward to: TRUE") end
-      else
-        self.spec_drivable.reverserDirection = -1
-        if debug > 0 then print("--> ("..self.rootNode..") changed shuttle shift isForward to: FALSE") end
+      if TSX_EnhancedVehicle.functionShuttleIsEnabled then
+        if self.vData.want[4] then
+          self.spec_drivable.reverserDirection = 1
+          if debug > 0 then print("--> ("..self.rootNode..") changed shuttle shift isForward to: TRUE") end
+        else
+          self.spec_drivable.reverserDirection = -1
+          if debug > 0 then print("--> ("..self.rootNode..") changed shuttle shift isForward to: FALSE") end
+        end
+        -- turn around driving direction if vehicle is in reverse driving mode
+        local _isRD = 1
+        if self.spec_reverseDriving ~= nil and self.spec_reverseDriving.isReverseDriving ~= nil then
+          _isRD = self.spec_reverseDriving.isReverseDriving and -1 or 1
+        end
+        self.spec_drivable.reverserDirection = self.spec_drivable.reverserDirection * _isRD
       end
-      -- turn around driving direction if vehicle is in reverse driving mode
-      local _isRD = 1
-      if self.spec_reverseDriving ~= nil and self.spec_reverseDriving.isReverseDriving ~= nil then
-        _isRD = self.spec_reverseDriving.isReverseDriving and -1 or 1
-      end
-      self.spec_drivable.reverserDirection = self.spec_drivable.reverserDirection * _isRD
       self.vData.is[4] = self.vData.want[4]
     end
 
     -- shuttle shift parking break
     if self.vData.is[6] ~= self.vData.want[6] then
-      if self.vData.want[6] then
-        if debug > 0 then print("--> ("..self.rootNode..") changed shuttle shift breakIsOn to: TRUE") end
-      else
-        if debug > 0 then print("--> ("..self.rootNode..") changed shuttle shift breakIsOn to: FALSE") end
+      if TSX_EnhancedVehicle.functionShuttleIsEnabled then
+        if self.vData.want[6] then
+          if debug > 0 then print("--> ("..self.rootNode..") changed shuttle shift breakIsOn to: TRUE") end
+        else
+          if debug > 0 then print("--> ("..self.rootNode..") changed shuttle shift breakIsOn to: FALSE") end
+        end
       end
       self.vData.is[6] = self.vData.want[6]
     end
@@ -558,10 +581,24 @@ end
 function TSX_EnhancedVehicle:onDraw()
   if debug > 2 then print("-> " .. myName .. ": onDraw, S: " .. tostring(self.isServer) .. ", C: " .. tostring(self.isClient) .. mySelf(self)) end
 
+
   -- only on client side and GUI is visible
   if self.isClient and not g_gui:getIsGuiVisible() and self:getIsControlled() then
     local fS = TSX_EnhancedVehicle.fontSize * TSX_EnhancedVehicle.uiScale
     local tP = TSX_EnhancedVehicle.textPadding * TSX_EnhancedVehicle.uiScale
+
+    -- show mod conflict warning (very bad implementation :-( )
+    if TSX_EnhancedVehicle.functionShuttleIsEnabled and ksm_loaded and self.ksmShuttleCtrl then -- should be replaced by a ksmExternalGetShuttleCtrl() function ?
+      setTextColor(1, 1, 1, 1)
+      setTextAlignment(RenderText.ALIGN_LEFT)
+      setTextVerticalAlignment(RenderText.VERTICAL_ALIGN_MIDDLE)
+      setTextBold(true)
+      warning_txt = string.format("%s\n%s\n\n%s\n%s\n%s\n\n%s\n%s\n%s\n\n(*) %s", g_i18n:getText("EV_KS_warning1"), g_i18n:getText("EV_KS_warning2"), g_i18n:getText("EV_KS_warning3"),
+                                                                        g_i18n:getText("EV_KS_warning4"), g_i18n:getText("EV_KS_warning5"), g_i18n:getText("EV_KS_warning6"),
+                                                                        g_i18n:getText("EV_KS_warning7"), g_i18n:getText("EV_KS_warning8"), lC.confFile)
+      w = getTextWidth(fS*1.6, warning_txt)
+      renderText(0.5-(w/2), 0.25, fS*1.6, warning_txt)
+    end
 
     -- render debug stuff
     if TSX_dbg then
@@ -770,7 +807,7 @@ function TSX_EnhancedVehicle:onDraw()
     end
 
     -- ### do the differential stuff ###
-    if self.spec_motorized ~= nil and TSX_EnhancedVehicle.diff.enabled then
+    if TSX_EnhancedVehicle.functionDifferentialIsEnabled and self.spec_motorized ~= nil and TSX_EnhancedVehicle.diff.enabled then
       -- prepare text
       _txt = {}
       _txt.color = { "green", "green", "gray" }
@@ -805,7 +842,7 @@ function TSX_EnhancedVehicle:onDraw()
     end
 
     -- ### do the shuttle shift stuff ###
-    if self.vData ~= nil and TSX_EnhancedVehicle.shuttle.enabled then
+    if TSX_EnhancedVehicle.functionShuttleIsEnabled and self.vData ~= nil and TSX_EnhancedVehicle.shuttle.enabled then
       local _color = { "gray", "gray", "gray" }
       local _trans = 0.25
       -- prepare
@@ -957,9 +994,26 @@ function TSX_EnhancedVehicle:onRegisterActionEvents(isSelected, isOnActiveVehicl
 
   -- only in active vehicle and when we control it
   if isOnActiveVehicle and self:getIsControlled() then
+    -- assemble list of actions to attach
+    local actionList = TSX_EnhancedVehicle.actions.global
+--    if TSX_EnhancedVehicle.functionDifferentialIsEnabled then
+      for _, v in ipairs(TSX_EnhancedVehicle.actions.diff) do
+        table.insert(actionList, v)
+      end
+--    end
+--    if TSX_EnhancedVehicle.functionShuttleIsEnabled then
+      for _, v in ipairs(TSX_EnhancedVehicle.actions.shuttle) do
+        table.insert(actionList, v)
+      end
+--    end
+--    if TSX_EnhancedVehicle.functionHydraulicIsEnabled then
+      for _, v in ipairs(TSX_EnhancedVehicle.actions.hydraulic) do
+        table.insert(actionList, v)
+      end
+--    end
 
     -- attach our actions
-    for _ ,actionName in pairs(TSX_EnhancedVehicle.actions) do
+    for _ ,actionName in pairs(actionList) do
       local _, eventName = InputBinding.registerActionEvent(g_inputBinding, actionName, self, TSX_EnhancedVehicle.onActionCall, false, true, false, true)
       -- help menu priorization
       if g_inputBinding ~= nil and g_inputBinding.events ~= nil and g_inputBinding.events[eventName] ~= nil then
@@ -986,7 +1040,7 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
   end
 
   -- front diff
-  if actionName == "TSX_EnhancedVehicle_FD" then
+  if TSX_EnhancedVehicle.functionDifferentialIsEnabled and actionName == "TSX_EnhancedVehicle_FD" then
     if TSX_EnhancedVehicle.sounds["diff_lock"] ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
       playSample(TSX_EnhancedVehicle.sounds["diff_lock"], 1, 0.5, 0, 0, 0)
     end
@@ -998,7 +1052,7 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
   end
 
   -- back diff
-  if actionName == "TSX_EnhancedVehicle_RD" then
+  if TSX_EnhancedVehicle.functionDifferentialIsEnabled and actionName == "TSX_EnhancedVehicle_RD" then
     if TSX_EnhancedVehicle.sounds["diff_lock"] ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
       playSample(TSX_EnhancedVehicle.sounds["diff_lock"], 1, 0.5, 0, 0, 0)
     end
@@ -1010,7 +1064,7 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
   end
 
   -- both diffs
-  if actionName == "TSX_EnhancedVehicle_BD" then
+  if TSX_EnhancedVehicle.functionDifferentialIsEnabled and actionName == "TSX_EnhancedVehicle_BD" then
     if TSX_EnhancedVehicle.sounds["diff_lock"] ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
       playSample(TSX_EnhancedVehicle.sounds["diff_lock"], 1, 0.5, 0, 0, 0)
     end
@@ -1024,7 +1078,7 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
   end
 
   -- wheel drive mode
-  if actionName == "TSX_EnhancedVehicle_DM" then
+  if TSX_EnhancedVehicle.functionDifferentialIsEnabled and actionName == "TSX_EnhancedVehicle_DM" then
     if TSX_EnhancedVehicle.sounds["diff_lock"] ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
       playSample(TSX_EnhancedVehicle.sounds["diff_lock"], 1, 0.5, 0, 0, 0)
     end
@@ -1039,7 +1093,7 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
   end
 
   -- shuttle mode on/off
-  if actionName == "TSX_EnhancedVehicle_SHUTTLE_ONOFF" then
+  if TSX_EnhancedVehicle.functionShuttleIsEnabled and actionName == "TSX_EnhancedVehicle_SHUTTLE_ONOFF" then
     self.vData.want[5] = not self.vData.want[5]
     if self.isClient and not self.isServer then
       self.vData.is[5] = self.vData.want[5]
@@ -1048,7 +1102,7 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
   end
 
   -- change driving direction
-  if actionName == "TSX_EnhancedVehicle_SHUTTLE_SWITCH" and self.vData.is[5] and not self.vData.is[6] then
+  if TSX_EnhancedVehicle.functionShuttleIsEnabled and actionName == "TSX_EnhancedVehicle_SHUTTLE_SWITCH" and self.vData.is[5] and not self.vData.is[6] then
     -- play sound effect
     if TSX_EnhancedVehicle.sounds["shifter"] ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
       playSample(TSX_EnhancedVehicle.sounds["shifter"], 1, 0.5, 0, 0, 0)
@@ -1061,7 +1115,7 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
   end
 
   -- driving direction forwards
-  if actionName == "TSX_EnhancedVehicle_SHUTTLE_FWD" and self.vData.is[5] and not self.vData.want[4] and not self.vData.is[6] then
+  if TSX_EnhancedVehicle.functionShuttleIsEnabled and actionName == "TSX_EnhancedVehicle_SHUTTLE_FWD" and self.vData.is[5] and not self.vData.want[4] and not self.vData.is[6] then
     if TSX_EnhancedVehicle.sounds["shifter"] ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
       playSample(TSX_EnhancedVehicle.sounds["shifter"], 1, 0.5, 0, 0, 0)
     end
@@ -1073,7 +1127,7 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
   end
 
   -- driving direction reverse
-  if actionName == "TSX_EnhancedVehicle_SHUTTLE_REV" and self.vData.is[5] and self.vData.want[4] and not self.vData.is[6] then
+  if TSX_EnhancedVehicle.functionShuttleIsEnabled and actionName == "TSX_EnhancedVehicle_SHUTTLE_REV" and self.vData.is[5] and self.vData.want[4] and not self.vData.is[6] then
     if TSX_EnhancedVehicle.sounds["shifter"] ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
       playSample(TSX_EnhancedVehicle.sounds["shifter"], 1, 0.5, 0, 0, 0)
     end
@@ -1085,7 +1139,7 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
   end
 
   -- parking brake on/off
-  if actionName == "TSX_EnhancedVehicle_SHUTTLE_PARK" and self.vData.is[5] then
+  if TSX_EnhancedVehicle.functionShuttleIsEnabled and actionName == "TSX_EnhancedVehicle_SHUTTLE_PARK" and self.vData.is[5] then
     if self.vData.is[6] and TSX_EnhancedVehicle.sounds["brakeOff"] ~= nil and TSX_EnhancedVehicle.soundIsOn and g_dedicatedServerInfo == nil then
       playSample(TSX_EnhancedVehicle.sounds["brakeOff"], 1, 0.1, 0, 0, 0)
     end
@@ -1100,7 +1154,7 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
   end
 
   -- rear hydraulic up/down
-  if actionName == "TSX_EnhancedVehicle_AJ_REAR_UPDOWN" then
+  if TSX_EnhancedVehicle.functionHydraulicIsEnabled and actionName == "TSX_EnhancedVehicle_AJ_REAR_UPDOWN" then
     TSX_EnhancedVehicle:enumerateAttachments(self)
 
     -- first the joints itsself
@@ -1123,7 +1177,7 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
   end
 
   -- front hydraulic up/down
-  if actionName == "TSX_EnhancedVehicle_AJ_FRONT_UPDOWN" then
+  if TSX_EnhancedVehicle.functionHydraulicIsEnabled and actionName == "TSX_EnhancedVehicle_AJ_FRONT_UPDOWN" then
     TSX_EnhancedVehicle:enumerateAttachments(self)
 
     -- first the joints itsself
@@ -1146,7 +1200,7 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
   end
 
   -- rear hydraulic on/off
-  if actionName == "TSX_EnhancedVehicle_AJ_REAR_ONOFF" then
+  if TSX_EnhancedVehicle.functionHydraulicIsEnabled and actionName == "TSX_EnhancedVehicle_AJ_REAR_ONOFF" then
     TSX_EnhancedVehicle:enumerateAttachments(self)
 
     for _, object in pairs(implements_back) do
@@ -1169,7 +1223,7 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
   end
 
   -- front hydraulic on/off
-  if actionName == "TSX_EnhancedVehicle_AJ_FRONT_ONOFF" then
+  if TSX_EnhancedVehicle.functionHydraulicIsEnabled and actionName == "TSX_EnhancedVehicle_AJ_FRONT_ONOFF" then
     TSX_EnhancedVehicle:enumerateAttachments(self)
 
     for _, object in pairs(implements_front) do
@@ -1194,7 +1248,7 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
 
   -- reset config
   if actionName == "TSX_EnhancedVehicle_RESET" then
-    TSX_EnhancedVehicle:resetConfig()
+    TSX_EnhancedVehicle:resetConfig(true)
     lC:writeConfig()
     TSX_EnhancedVehicle:activateConfig()
   end
@@ -1297,63 +1351,59 @@ end
 
 -- what a crap... we've to hook into the updateWheelsPhysics function to prevent the vehicle to drive in the wrong direction in shuttle mode
 function TSX_EnhancedVehicle:updateWheelsPhysics( originalFunction, dt, currentSpeed, acceleration, doHandbrake, stopAndGoBraking )
---print("function WheelsUtil.updateWheelsPhysics("..tostring(self)..", "..tostring(dt)..", "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
+--print("function WheelsUtil.updateWheelsPhysics("..self.typeDesc..", "..tostring(dt)..", "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
 
   local brakeLights = false
   local reverseLights = false
-  if self.vData ~= nil and self.vData.is[5] then
-    if self:getIsVehicleControlledByPlayer() and self:getIsMotorStarted() then
-      -- are we driving backwards?
-      if currentSpeed <= -0.0003 then
-        reverseLights = true
-        if (self.vData.is[4] and self.spec_drivable.reverserDirection == 1) or (not self.vData.is[4] and self.spec_drivable.reverserDirection == 1) then
-          acceleration = 0
-          currentSpeed = 0
-          brakeLights = true
-        end
-        if ksm_loaded then
-          self.ksmMovingDir = -1
-          if self.ksmReverseIsOn then
-            self:ksmSetState( "ksmCamFwd", false )
-          end
-        end
-      end
-      -- are we driving forwards?
-      if currentSpeed >= 0.0003 then
-        if (not self.vData.is[4] and self.spec_drivable.reverserDirection == -1) or (self.vData.is[4] and self.spec_drivable.reverserDirection == -1) then
-          acceleration = 0
-          currentSpeed = 0
-          brakeLights = true
-        end
-        if ksm_loaded then
-          self.ksmMovingDir = 1
-          if self.ksmReverseIsOn then
-            self:ksmSetState( "ksmCamFwd", true )
-          end
-        end
-      end
-      -- parkBreakIsOn
-      if self.vData.is[6] then
-        brakeLights = true
-        if currentSpeed >= -0.0003 and currentSpeed <= 0.0003 then
-          brakeLights = false
-        end
-        acceleration = 0
-        currentSpeed = 0
-      else
-        -- don't make vehicle go in old behavior (drive reverse when pressing "back" key)
-        if acceleration < -0.001 then
-          if self.vData.is[4] and currentSpeed <= 0.0003 then
---            print("NO FWD "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
+  if TSX_EnhancedVehicle.functionShuttleIsEnabled then
+    if self.vData ~= nil and self.vData.is[5] then
+      if self:getIsVehicleControlledByPlayer() and self:getIsMotorStarted() then
+        -- are we driving backwards?
+        if currentSpeed <= -0.0003 then
+          reverseLights = true
+          if (self.vData.is[4] and self.spec_drivable.reverserDirection == 1) or (not self.vData.is[4] and self.spec_drivable.reverserDirection == 1) then
             acceleration = 0
             currentSpeed = 0
             brakeLights = true
           end
-          if not self.vData.is[4] and currentSpeed >= -0.0003 then
---            print("NO RWS "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
+          if ksm_loaded then
+            self:ksmExternalSetMovingDirection(-1)
+          end
+        end
+        -- are we driving forwards?
+        if currentSpeed >= 0.0003 then
+          if (not self.vData.is[4] and self.spec_drivable.reverserDirection == -1) or (self.vData.is[4] and self.spec_drivable.reverserDirection == -1) then
             acceleration = 0
             currentSpeed = 0
             brakeLights = true
+          end
+          if ksm_loaded then
+            self:ksmExternalSetMovingDirection(1)
+          end
+        end
+        -- parkBreakIsOn
+        if self.vData.is[6] then
+          brakeLights = true
+          if currentSpeed >= -0.0003 and currentSpeed <= 0.0003 then
+            brakeLights = false
+          end
+          acceleration = 0
+          currentSpeed = 0
+        else
+          -- don't make vehicle go in old behavior (drive reverse when pressing "back" key)
+          if acceleration < -0.001 then
+            if self.vData.is[4] and currentSpeed <= 0.0003 then
+  --            print("NO FWD "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
+              acceleration = 0
+              currentSpeed = 0
+              brakeLights = true
+            end
+            if not self.vData.is[4] and currentSpeed >= -0.0003 then
+  --            print("NO RWS "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
+              acceleration = 0
+              currentSpeed = 0
+              brakeLights = true
+            end
           end
         end
       end
@@ -1366,11 +1416,13 @@ function TSX_EnhancedVehicle:updateWheelsPhysics( originalFunction, dt, currentS
     print("Ooops in updateWheelsPhysics :" .. tostring(result))
   end
 
-  if brakeLights and self.setBrakeLightsVisibility ~= nil then
-    self:setBrakeLightsVisibility(true)
-  end
-  if reverseLights and self.setReverseLightsVisibility ~= nil then
-    self:setReverseLightsVisibility(true)
+  if TSX_EnhancedVehicle.functionShuttleIsEnabled then
+    if brakeLights and type(self.setBrakeLightsVisibility) == "function" then
+      self:setBrakeLightsVisibility(true)
+    end
+    if reverseLights and type(self.setReverseLightsVisibility) == "function" then
+      self:setReverseLightsVisibility(true)
+    end
   end
 
   return result

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<l10n>
+  <texts>
+    <text name="EV_KS_warning1" text="Achtung: Mod-Konflikt erkannt."/>
+    <text name="EV_KS_warning2" text="ShuttleShift/Control kann nicht gleichzeitig von EnhancedVehicle und KeyboardSteer verwendet werden."/>
+    <text name="EV_KS_warning3" text="Wenn Du ShuttleControl von KeyboardSteer verwenden möchtest (empfohlen):"/>
+    <text name="EV_KS_warning4" text="* Öffne die Einstellungen von KeyboardSteer (Standard: STRG+C) und setze 'Shuttle Control' auf 'An'"/>
+    <text name="EV_KS_warning5" text="* Öffne die XML Config(*) von EnhancedVehicle, setze die Variable 'ShuttleIsEnabled' auf 'false' und lade die Config neu (Standard: KeyPad *)"/>
+    <text name="EV_KS_warning6" text="Wenn Du ShuttleShift von EnhancedVehicle verwenden möchtest:"/>
+    <text name="EV_KS_warning7" text="* Öffne die Einstellungen von KeyboardSteer (Standard: STRG+C) und setze 'Shuttle Control' auf 'Aus'"/>
+    <text name="EV_KS_warning8" text="* Öffne die XML Config(*) von EnhancedVehicle, setze die Variable 'ShuttleIsEnabled' auf 'true' und lade die Config neu (Standard: KeyPad *)"/>
+  </texts>
+</l10n>

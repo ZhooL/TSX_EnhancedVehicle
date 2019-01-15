@@ -3,7 +3,7 @@
   <author>ZhooL</author>
   <contributors>Continuum, Toryius, boloss</contributors>
 
-  <version>1.6.1.0</version>
+  <version>1.6.2.0</version>
 
   <title>
     <de>EnhancedVehicle</de>
@@ -21,7 +21,7 @@
 
   <multiplayer supported="true"/>
 
-  <l10n>
+  <l10n filenamePrefix="modDesc_l10n">
     <text name="input_TSX_EnhancedVehicle_FD">
       <de>EV: Differentialsperre Vorderachse an/aus</de>
       <en>EV: Differential lock front axle on/off</en>
