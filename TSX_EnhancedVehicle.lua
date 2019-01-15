@@ -274,7 +274,11 @@ function TSX_EnhancedVehicle:resetConfig(skip)
   lC:clearConfig()
 
   -- functions
-  lC:addConfigValue("global.functions", "shuttleIsEnabled",      "bool", true)
+  if ksm_loaded then
+    lC:addConfigValue("global.functions", "shuttleIsEnabled",      "bool", false)
+  else
+    lC:addConfigValue("global.functions", "shuttleIsEnabled",      "bool", true)
+  end
   lC:addConfigValue("global.functions", "differentialIsEnabled", "bool", true)
   lC:addConfigValue("global.functions", "hydraulicIsEnabled",    "bool", true)
 
