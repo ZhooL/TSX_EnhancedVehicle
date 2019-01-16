@@ -14,6 +14,7 @@ CHANGELOG
   to comply to that EV will no longer disable stuff, but display an annoying warning text on screen to instruct you how to proceed choosing a shuttle control/shift
 + added global options to enable/disable shuttle shift, differentials and hydraulics
 + added functions for other mods to enable/disable EnhancedVehicle functions
++ the "beep beep" is back
 
 2019-01-14 - V1.6.1.0
 + added functionality to turn on/off both differentials the same time (no default keybinding)
@@ -425,6 +426,8 @@ end
 function TSX_EnhancedVehicle:onPostLoad(savegame)
   if debug > 1 then print("-> " .. myName .. ": onPostLoad" .. mySelf(self)) end
 
+  self.reverseLights = false
+
   -- (server) set defaults when vehicle is "new"
   -- vData
   --  1 - frontDiffIsOn
@@ -614,8 +617,27 @@ function TSX_EnhancedVehicle:onUpdate(dt)
       end
       self.vData.is[6] = self.vData.want[6]
     end
-
   end
+
+  -- on client side only
+  if TSX_EnhancedVehicle.functionShuttleIsEnabled then
+    if self.isClient and self:getIsVehicleControlledByPlayer() then
+      if self.reverseSample ~= nil then
+        if self.reverseLights then
+          if not g_soundManager:getIsSamplePlaying(self.reverseSample) then
+            -- beep beep
+            g_soundManager:playSample(self.reverseSample)
+          end
+        else
+          if g_soundManager:getIsSamplePlaying(self.reverseSample) then
+            -- no beep beep
+            g_soundManager:stopSample(self.reverseSample)
+          end
+        end
+      end
+    end
+  end
+
 end
 
 -- #############################################################################
@@ -1042,6 +1064,14 @@ function TSX_EnhancedVehicle:onRegisterActionEvents(isSelected, isOnActiveVehicl
 
   -- only in active vehicle and when we control it
   if isOnActiveVehicle and self:getIsControlled() then
+    -- if vehicle has reverse driving beep beep sound
+    if self.reverseSample == nil then
+      if self.spec_motorized ~= nil and self.spec_motorized.samples ~= nil and self.spec_motorized.samples.reverseDrive ~= nil then
+        self.reverseSample = self.spec_motorized.samples.reverseDrive
+        self.spec_motorized.samples.reverseDrive = nil -- i don't know why, but thx mogli for inspiration
+      end
+    end
+
     -- assemble list of actions to attach
     local actionList = TSX_EnhancedVehicle.actions.global
 --    if TSX_EnhancedVehicle.functionDifferentialIsEnabled then
@@ -1402,13 +1432,13 @@ function TSX_EnhancedVehicle:updateWheelsPhysics( originalFunction, dt, currentS
 --print("function WheelsUtil.updateWheelsPhysics("..self.typeDesc..", "..tostring(dt)..", "..tostring(currentSpeed)..", "..tostring(acceleration)..", "..tostring(doHandbrake)..", "..tostring(stopAndGoBraking))
 
   local brakeLights = false
-  local reverseLights = false
+  self.reverseLights = false
   if TSX_EnhancedVehicle.functionShuttleIsEnabled then
     if self.vData ~= nil and self.vData.is[5] then
       if self:getIsVehicleControlledByPlayer() and self:getIsMotorStarted() then
         -- are we driving backwards?
         if currentSpeed <= -0.0003 then
-          reverseLights = true
+          self.reverseLights = true
           if (self.vData.is[4] and self.spec_drivable.reverserDirection == 1) or (not self.vData.is[4] and self.spec_drivable.reverserDirection == 1) then
             acceleration = 0
             currentSpeed = 0
@@ -1465,11 +1495,13 @@ function TSX_EnhancedVehicle:updateWheelsPhysics( originalFunction, dt, currentS
   end
 
   if TSX_EnhancedVehicle.functionShuttleIsEnabled then
-    if brakeLights and type(self.setBrakeLightsVisibility) == "function" then
-      self:setBrakeLightsVisibility(true)
-    end
-    if reverseLights and type(self.setReverseLightsVisibility) == "function" then
-      self:setReverseLightsVisibility(true)
+    if self:getIsVehicleControlledByPlayer() and self:getIsMotorStarted() then
+      if brakeLights and type(self.setBrakeLightsVisibility) == "function" then
+        self:setBrakeLightsVisibility(true)
+      end
+      if self.reverseLights and type(self.setReverseLightsVisibility) == "function" then
+        self:setReverseLightsVisibility(true)
+      end
     end
   end
 
