@@ -3,8 +3,8 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 09.01.2019
--- @Version: 1.0.0.2
+-- @Date: 16.01.2019
+-- @Version: 1.0.1.0
 
 -- #############################################################################
 
@@ -92,6 +92,25 @@ function libConfig:getConfigValue(section, name)
   end
 
   return(nil)
+end
+
+-- #############################################################################
+
+function libConfig:setConfigValue(section, name, value)
+  if self.debug > 0 then print("-> "..myName.." ("..self.myName..") setConfigValue()") end
+  if self.debug > 1 then print("--> section: "..section..", name: "..name..", value: "..tostring(value)) end
+
+  -- search through data and change value
+  for _, data in pairs(self.dataCurrent) do
+    if data.section == section and data.name == name then
+      data.value = value
+    end
+  end
+
+  -- save changes
+  self:writeConfig()
+
+  if self.debug > 2 then print(DebugUtil.printTableRecursively(self.dataCurrent, 0, 0, 3)) end
 end
 
 -- #############################################################################

@@ -3,7 +3,7 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 15.01.2019
+-- @Date: 16.01.2019
 -- @Version: 1.6.2.0
 
 --[[
@@ -13,6 +13,7 @@ CHANGELOG
 * talked to Mogli12 about compatibility between EV and KS and instead of disabling other mods functions the player (thats you) should decide which mods Shuttle Control/Shift should be used
   to comply to that EV will no longer disable stuff, but display an annoying warning text on screen to instruct you how to proceed choosing a shuttle control/shift
 + added global options to enable/disable shuttle shift, differentials and hydraulics
++ added functions for other mods to enable/disable EnhancedVehicle functions
 
 2019-01-14 - V1.6.1.0
 + added functionality to turn on/off both differentials the same time (no default keybinding)
@@ -204,6 +205,45 @@ function TSX_EnhancedVehicle.registerEventListeners(vehicleType)
 end
 
 -- #############################################################################
+-- ### function for others mods to enable/disable EnhancedVehicle functions
+-- ###   name: shuttle, differential, hydraulic
+-- ###  state: true or false
+
+function TSX_EnhancedVehicle:functionEnable(name, state)
+  if name == "shuttle" then
+    lC:setConfigValue("global.functions", "shuttleIsEnabled", state)
+    TSX_EnhancedVehicle.functionShuttleIsEnabled = state
+  end
+  if name == "differential" then
+    lC:setConfigValue("global.functions", "differentialIsEnabled", state)
+    TSX_EnhancedVehicle.functionDifferentialIsEnabled = state
+  end
+  if name == "hydraulic" then
+    lC:setConfigValue("global.functions", "hydraulicIsEnabled", state)
+    TSX_EnhancedVehicle.functionHydraulicIsEnabled = state
+  end
+end
+
+-- #############################################################################
+-- ### function for others mods to get EnhancedVehicle functions status
+-- ###   name: shuttle, differential, hydraulic
+-- ###  returns true or false
+
+function TSX_EnhancedVehicle:functionStatus(name)
+  if name == "shuttle" then
+    return(lC:getConfigValue("global.functions", "shuttleIsEnabled"))
+  end
+  if name == "differential" then
+    return(lC:getConfigValue("global.functions", "differentialIsEnabled"))
+  end
+  if name == "hydraulic" then
+    return(lC:getConfigValue("global.functions", "hydraulicIsEnabled"))
+  end
+
+  return(nil)
+end
+
+-- #############################################################################
 
 function TSX_EnhancedVehicle:activateConfig()
   -- here we will "move" our config from the libConfig internal storage to the variables we actually use
@@ -374,6 +414,10 @@ end
 
 function TSX_EnhancedVehicle:onLoad(savegame)
   if debug > 1 then print("-> " .. myName .. ": onLoad" .. mySelf(self)) end
+
+  -- export functions for other mods
+  self.functionEnable = TSX_EnhancedVehicle.functionEnable
+  self.functionStatus = TSX_EnhancedVehicle.functionStatus
 end
 
 -- #############################################################################
