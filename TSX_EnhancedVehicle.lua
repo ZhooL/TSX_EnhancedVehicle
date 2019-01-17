@@ -3,11 +3,14 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 16.01.2019
--- @Version: 1.6.2.0
+-- @Date: 17.01.2019
+-- @Version: 1.6.3.0
 
 --[[
 CHANGELOG
+
+2019-01-17 - V1.6.3.0
+* updated to support the migration of KeyboardSteer to VehicleControlAddon (vca)
 
 2019-01-15 - V1.6.2.0
 * talked to Mogli12 about compatibility between EV and KS and instead of disabling other mods functions the player (thats you) should decide which mods Shuttle Control/Shift should be used
@@ -182,9 +185,9 @@ if g_dedicatedServerInfo == nil then
   end
 end
 
-ksm_loaded = false
-if g_modIsLoaded.FS19_KeyboardSteer ~= nil then
-  ksm_loaded = true
+mogli_loaded = false
+if g_modIsLoaded.FS19_KeyboardSteer ~= nil or g_modIsLoaded.FS19_VehicleControlAddon ~= nil then
+  mogli_loaded = true
 end
 
 -- #############################################################################
@@ -306,16 +309,16 @@ function TSX_EnhancedVehicle:resetConfig(skip)
 
   -- support for keyboardSteer
   ksm = 0
-  if ksm_loaded then
+  if mogli_loaded then
     ksm = 0.07 * TSX_EnhancedVehicle.uiScale
-    if debug > 1 then print("-> found keyboardSteerMogli. Adjusting some HUD elements") end
+    if debug > 1 then print("-> found KeyboardSteer or VehicleControlAddon. Adjusting some HUD elements") end
   end
 
   -- start fresh
   lC:clearConfig()
 
   -- functions
-  if ksm_loaded then
+  if mogli_loaded then
     lC:addConfigValue("global.functions", "shuttleIsEnabled",      "bool", false)
   else
     lC:addConfigValue("global.functions", "shuttleIsEnabled",      "bool", true)
@@ -654,11 +657,16 @@ function TSX_EnhancedVehicle:onDraw()
 
   -- only on client side and GUI is visible
   if self.isClient and not g_gui:getIsGuiVisible() and self:getIsControlled() then
+    local vcaShuttleCtrl = false
+    if type( self.vcaExternalGetShuttleCtrl ) == "function" then
+      vcaShuttleCtrl = self:vcaExternalGetShuttleCtrl()
+    end
+
     local fS = TSX_EnhancedVehicle.fontSize * TSX_EnhancedVehicle.uiScale
     local tP = TSX_EnhancedVehicle.textPadding * TSX_EnhancedVehicle.uiScale
 
     -- show mod conflict warning (very bad implementation :-( )
-    if TSX_EnhancedVehicle.functionShuttleIsEnabled and ksm_loaded and self.ksmShuttleCtrl then -- should be replaced by a ksmExternalGetShuttleCtrl() function ?
+    if TSX_EnhancedVehicle.functionShuttleIsEnabled and (vcaShuttleCtrl or self.ksmShuttleCtrl) then
       setTextColor(1, 1, 1, 1)
       setTextAlignment(RenderText.ALIGN_LEFT)
       setTextVerticalAlignment(RenderText.VERTICAL_ALIGN_MIDDLE)
@@ -1444,7 +1452,7 @@ function TSX_EnhancedVehicle:updateWheelsPhysics( originalFunction, dt, currentS
             currentSpeed = 0
             brakeLights = true
           end
-          if ksm_loaded then
+          if mogli_loaded then
             self:ksmExternalSetMovingDirection(-1)
           end
         end
@@ -1455,7 +1463,7 @@ function TSX_EnhancedVehicle:updateWheelsPhysics( originalFunction, dt, currentS
             currentSpeed = 0
             brakeLights = true
           end
-          if ksm_loaded then
+          if mogli_loaded then
             self:ksmExternalSetMovingDirection(1)
           end
         end
