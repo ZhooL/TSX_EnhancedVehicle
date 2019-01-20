@@ -3,8 +3,8 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 08.01.2019
--- @Version: 1.5.0.0
+-- @Date: 20.01.2019
+-- @Version: 1.6.3.0
 
 -- #############################################################################
 
@@ -62,7 +62,12 @@ function TSX_EnhancedVehicle_Register:loadMap()
   print("--> loaded TSX_EnhancedVehicle version " .. self.version .. " (by ZhooL) <--");
 
   -- first set our current and default config to default values
-  TSX_EnhancedVehicle:resetConfig()
+  if g_modIsLoaded.FS19_KeyboardSteer ~= nil or g_modIsLoaded.FS19_VehicleControlAddon ~= nil then
+    TSX_EnhancedVehicle:resetConfig(true)
+  else
+    TSX_EnhancedVehicle:resetConfig()
+  end
+
   -- then read values from disk and "overwrite" current config
   lC:readConfig()
   -- then write current config (which is now a merge between default values and from disk)

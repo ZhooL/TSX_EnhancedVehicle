@@ -2,12 +2,12 @@
 <l10n>
   <texts>
     <text name="EV_KS_warning1" text="Warning: mod conflict detected."/>
-    <text name="EV_KS_warning2" text="ShuttleShift/Control can't be used from EnhancedVehicle and KeyboardSteer the same time."/>
-    <text name="EV_KS_warning3" text="If you like to use shuttle control from KeyboardSteer (recommended):"/>
-    <text name="EV_KS_warning4" text="* open the KeyboardSteer configuration (default: CTRL+C) and set 'Shuttle' to 'On'"/>
+    <text name="EV_KS_warning2" text="ShuttleShift can't be used from EnhancedVehicle and KeyboardSteer(KS)/VehicleControlAddon(VCA) the same time."/>
+    <text name="EV_KS_warning3" text="If you like to use shuttle control from KS/VCA (recommended):"/>
+    <text name="EV_KS_warning4" text="* open the KS/VCA configuration (default: CTRL+C) and set 'Shuttle' to 'On'"/>
     <text name="EV_KS_warning5" text="* open the XML config(*) from EnhancedVehicle, set the variable 'ShuttleIsEnabled' to 'false' and reload config (default: KeyPad *)"/>
     <text name="EV_KS_warning6" text="If you like to use shuttle shift from EnhancedVehicle:"/>
-    <text name="EV_KS_warning7" text="* open the KeyboardSteer configuration (default: CTRL+C) and set 'Shuttle' to 'Off'"/>
+    <text name="EV_KS_warning7" text="* open the KS/VCA configuration (default: CTRL+C) and set 'Shuttle' to 'Off'"/>
     <text name="EV_KS_warning5" text="* open the XML config(*) from EnhancedVehicle, set the variable 'ShuttleIsEnabled' to 'true' and reload config (default: KeyPad *)"/>
   </texts>
 </l10n>

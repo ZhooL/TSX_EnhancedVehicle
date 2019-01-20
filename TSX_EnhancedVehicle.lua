@@ -3,13 +3,13 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 17.01.2019
+-- @Date: 20.01.2019
 -- @Version: 1.6.3.0
 
 --[[
 CHANGELOG
 
-2019-01-17 - V1.6.3.0
+2019-01-20 - V1.6.3.0
 * updated to support the migration of KeyboardSteer to VehicleControlAddon (vca)
 
 2019-01-15 - V1.6.2.0
@@ -185,6 +185,7 @@ if g_dedicatedServerInfo == nil then
   end
 end
 
+-- check for KeyboardSteer or VehicleControlAddon
 mogli_loaded = false
 if g_modIsLoaded.FS19_KeyboardSteer ~= nil or g_modIsLoaded.FS19_VehicleControlAddon ~= nil then
   mogli_loaded = true
@@ -203,7 +204,7 @@ end
 function TSX_EnhancedVehicle.registerEventListeners(vehicleType)
   if debug > 1 then print("-> " .. myName .. ": registerEventListeners ") end
 
-  for _,n in pairs( { "onLoad", "onPostLoad", "saveToXMLFile", "onUpdate", "onUpdateTick", "onDraw", "onReadStream", "onWriteStream", "onRegisterActionEvents", "onEnterVehicle", "onReverseDirectionChanged" } ) do
+  for _,n in pairs( { "onLoad", "onPostLoad", "saveToXMLFile", "onUpdate", "onDraw", "onReadStream", "onWriteStream", "onRegisterActionEvents", "onEnterVehicle", "onReverseDirectionChanged" } ) do
     SpecializationUtil.registerEventListener(vehicleType, n, TSX_EnhancedVehicle)
   end
 end
@@ -291,9 +292,9 @@ end
 
 -- #############################################################################
 
-function TSX_EnhancedVehicle:resetConfig(skip)
+function TSX_EnhancedVehicle:resetConfig(disable)
   if debug > 0 then print("-> " .. myName .. ": resetConfig ") end
-  skip = false or skip
+  disable = false or disable
 
   local _x, _y
 
@@ -318,7 +319,7 @@ function TSX_EnhancedVehicle:resetConfig(skip)
   lC:clearConfig()
 
   -- functions
-  if mogli_loaded then
+  if disable then
     lC:addConfigValue("global.functions", "shuttleIsEnabled",      "bool", false)
   else
     lC:addConfigValue("global.functions", "shuttleIsEnabled",      "bool", true)
@@ -384,9 +385,6 @@ function TSX_EnhancedVehicle:resetConfig(skip)
   lC:addConfigValue("hud.diff", "zoomFactor", "float", 18)
   if g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement ~= nil then
     local _w, _h = getNormalizedScreenValues(TSX_EnhancedVehicle.diff_overlayWidth / lC:getConfigValue("hud.diff", "zoomFactor") * TSX_EnhancedVehicle.uiScale, TSX_EnhancedVehicle.diff_overlayHeight / lC:getConfigValue("hud.diff", "zoomFactor") * TSX_EnhancedVehicle.uiScale)
---    _x = baseX - (_w / 2)
---    _y = baseY + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusY * 2.0) + ksm
---    _y = baseY - (_h / 2)
     _x = baseX + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusX * 1.18)
     _y = baseY - (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusY * 1.28)
   end
@@ -398,8 +396,6 @@ function TSX_EnhancedVehicle:resetConfig(skip)
   lC:addConfigValue("hud.shuttle", "zoomFactor", "float", 3.5)
   if g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeIconElement ~= nil then
     local _w, _h = getNormalizedScreenValues(TSX_EnhancedVehicle.dir_overlayWidth / lC:getConfigValue("hud.shuttle", "zoomFactor") * TSX_EnhancedVehicle.uiScale, TSX_EnhancedVehicle.dir_overlayHeight / lC:getConfigValue("hud.shuttle", "zoomFactor") * TSX_EnhancedVehicle.uiScale)
---    _x = baseX - (_w / 2)
---    _y = baseY + (g_currentMission.inGameMenu.hud.speedMeter.fuelGaugeRadiusY * 1.3)
     _x = baseX - (g_currentMission.inGameMenu.hud.speedMeter.damageGaugeRadiusX * 1.575)
     _y = baseY - (_h / 2)
   end
@@ -645,15 +641,8 @@ end
 
 -- #############################################################################
 
-function TSX_EnhancedVehicle:onUpdateTick(dt)
-  if debug > 2 then print("-> " .. myName .. ": onUpdateTick " .. dt .. mySelf(self)) end
-end
-
--- #############################################################################
-
 function TSX_EnhancedVehicle:onDraw()
   if debug > 2 then print("-> " .. myName .. ": onDraw, S: " .. tostring(self.isServer) .. ", C: " .. tostring(self.isClient) .. mySelf(self)) end
-
 
   -- only on client side and GUI is visible
   if self.isClient and not g_gui:getIsGuiVisible() and self:getIsControlled() then
@@ -666,7 +655,7 @@ function TSX_EnhancedVehicle:onDraw()
     local tP = TSX_EnhancedVehicle.textPadding * TSX_EnhancedVehicle.uiScale
 
     -- show mod conflict warning (very bad implementation :-( )
-    if TSX_EnhancedVehicle.functionShuttleIsEnabled and (vcaShuttleCtrl or self.ksmShuttleCtrl) then
+    if TSX_EnhancedVehicle.functionShuttleIsEnabled and (vcaShuttleCtrl or self.ksmShuttleCtrl or self.ksmShuttleIsOn) then
       setTextColor(1, 1, 1, 1)
       setTextAlignment(RenderText.ALIGN_LEFT)
       setTextVerticalAlignment(RenderText.VERTICAL_ALIGN_MIDDLE)
@@ -1082,21 +1071,21 @@ function TSX_EnhancedVehicle:onRegisterActionEvents(isSelected, isOnActiveVehicl
 
     -- assemble list of actions to attach
     local actionList = TSX_EnhancedVehicle.actions.global
---    if TSX_EnhancedVehicle.functionDifferentialIsEnabled then
+    if TSX_EnhancedVehicle.functionDifferentialIsEnabled then
       for _, v in ipairs(TSX_EnhancedVehicle.actions.diff) do
         table.insert(actionList, v)
       end
---    end
---    if TSX_EnhancedVehicle.functionShuttleIsEnabled then
+    end
+    if TSX_EnhancedVehicle.functionShuttleIsEnabled then
       for _, v in ipairs(TSX_EnhancedVehicle.actions.shuttle) do
         table.insert(actionList, v)
       end
---    end
---    if TSX_EnhancedVehicle.functionHydraulicIsEnabled then
+    end
+    if TSX_EnhancedVehicle.functionHydraulicIsEnabled then
       for _, v in ipairs(TSX_EnhancedVehicle.actions.hydraulic) do
         table.insert(actionList, v)
       end
---    end
+    end
 
     -- attach our actions
     for _ ,actionName in pairs(actionList) do
@@ -1334,7 +1323,11 @@ function TSX_EnhancedVehicle:onActionCall(actionName, keyStatus, arg4, arg5, arg
 
   -- reset config
   if actionName == "TSX_EnhancedVehicle_RESET" then
-    TSX_EnhancedVehicle:resetConfig(true)
+    if mogli_loaded and (self.ksmShuttleIsOn or self.ksmShuttleCtrl or self.vcaShuttleCtrl) then
+      TSX_EnhancedVehicle:resetConfig(true)
+    else
+      TSX_EnhancedVehicle:resetConfig()
+    end
     lC:writeConfig()
     TSX_EnhancedVehicle:activateConfig()
   end
