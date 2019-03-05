@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<l10n>
+	<texts>
+		<text name="EV_KS_warning1" text="Attention: conflit de mod détecté."/> <!-- Google Translator -->
+		<text name="EV_KS_warning2" text="ShuttleShift ne peut pas être utilisé simultanément par EnhancedVehicle et KeyboardSteer(KS)/VehicleControlAddon(VCA)."/> <!-- Google Translator -->
+		<text name="EV_KS_warning3" text="Si vous souhaitez utiliser le contrôle de navette de KS/VCA (recommandé):"/> <!-- Google Translator -->
+		<text name="EV_KS_warning4" text="* ouvrez la configuration de KS/VCA (par défaut: CTRL+C) et réglez 'Shuttle' sur 'On'"/> <!-- Google Translator -->
+		<text name="EV_KS_warning5" text="* ouvrez la configuration XML(*) à partir de EnhancedVehicle, définissez la variable 'ShuttleIsEnabled' sur 'false' et rechargez la configuration (par défaut: KeyPad *)"/> <!-- Google Translator -->
+		<text name="EV_KS_warning6" text="Si vous aimez utiliser ShuttleShuttle de EnhancedVehicle:"/> <!-- Google Translator -->
+		<text name="EV_KS_warning7" text="* ouvrez la configuration de KS/VCA (par défaut: CTRL+C) et réglez 'Shuttle' sur 'Off'"/> <!-- Google Translator -->
+		<text name="EV_KS_warning5" text="* ouvrez la configuration XML (*) à partir de EnhancedVehicle, définissez la variable 'ShuttleIsEnabled' sur 'true' et rechargez la configuration (par défaut: KeyPad *)"/> <!-- Google Translator -->
+		<text name="input_TSX_EnhancedVehicle_FD" text="EV: Verrouillage du différentiel essieu avant on/off"/>
+		<text name="input_TSX_EnhancedVehicle_RD" text="EV: Verrouillage du différentiel essieu arrière on/off"/>
+		<text name="input_TSX_EnhancedVehicle_BD" text="EV: Deux blocages de différentiel on/off"/> <!-- Google Translator -->
+		<text name="input_TSX_EnhancedVehicle_DM" text="EV: Changer le mode de traction des roues"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_ONOFF" text="EV: Inverseur de sens de marche on/off"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_SWITCH" text="EV: Changer le sens de marche"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_FWD" text="EV: Marche avant"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_REV" text="EV: Marche arrière"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_PARK" text="EV: Frein de stationnement on/off"/>
+		<text name="input_TSX_EnhancedVehicle_AJ_REAR_UPDOWN" text="EV: Lever/baisser le relevage arrière"/>
+		<text name="input_TSX_EnhancedVehicle_AJ_REAR_ONOFF" text="EV: Relevage arrière on/off"/>
+		<text name="input_TSX_EnhancedVehicle_AJ_FRONT_UPDOWN" text="EV: Lever/baisser le relevage avant"/>
+		<text name="input_TSX_EnhancedVehicle_AJ_FRONT_ONOFF" text="EV: Relevage avant on/off"/>
+		<text name="input_TSX_EnhancedVehicle_RESET" text="EV: Réinitialiser le HUD"/>
+		<text name="input_TSX_EnhancedVehicle_RELOAD" text="EV: Recharger le fichier de config XML"/>
+	</texts>
+</l10n>
