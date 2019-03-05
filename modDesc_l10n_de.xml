@@ -1,13 +1,28 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <l10n>
-  <texts>
-    <text name="EV_KS_warning1" text="Achtung: Mod-Konflikt erkannt."/>
-    <text name="EV_KS_warning2" text="ShuttleShift kann nicht gleichzeitig von EnhancedVehicle und KeyboardSteer(KS)/VehicleControlAddon(VCA) verwendet werden."/>
-    <text name="EV_KS_warning3" text="Wenn Du ShuttleControl von KS/VCA verwenden möchtest (empfohlen):"/>
-    <text name="EV_KS_warning4" text="* Öffne die Einstellungen von KS/VCA (Standard: STRG+C) und setze 'Shuttle Control' auf 'An'"/>
-    <text name="EV_KS_warning5" text="* Öffne die XML Config(*) von EnhancedVehicle, setze die Variable 'ShuttleIsEnabled' auf 'false' und lade die Config neu (Standard: KeyPad *)"/>
-    <text name="EV_KS_warning6" text="Wenn Du ShuttleShift von EnhancedVehicle verwenden möchtest:"/>
-    <text name="EV_KS_warning7" text="* Öffne die Einstellungen von KS/VCA (Standard: STRG+C) und setze 'Shuttle Control' auf 'Aus'"/>
-    <text name="EV_KS_warning8" text="* Öffne die XML Config(*) von EnhancedVehicle, setze die Variable 'ShuttleIsEnabled' auf 'true' und lade die Config neu (Standard: KeyPad *)"/>
-  </texts>
+	<texts>
+		<text name="EV_KS_warning1" text="Achtung: Mod-Konflikt erkannt."/>
+		<text name="EV_KS_warning2" text="ShuttleShift kann nicht gleichzeitig von EnhancedVehicle und KeyboardSteer(KS)/VehicleControlAddon(VCA) verwendet werden."/>
+		<text name="EV_KS_warning3" text="Wenn Du ShuttleControl von KS/VCA verwenden möchtest (empfohlen):"/>
+		<text name="EV_KS_warning4" text="* Öffne die Einstellungen von KS/VCA (Standard: STRG+C) und setze 'Shuttle Control' auf 'An'"/>
+		<text name="EV_KS_warning5" text="* Öffne die XML Config(*) von EnhancedVehicle, setze die Variable 'ShuttleIsEnabled' auf 'false' und lade die Config neu (Standard: KeyPad *)"/>
+		<text name="EV_KS_warning6" text="Wenn Du ShuttleShift von EnhancedVehicle verwenden möchtest:"/>
+		<text name="EV_KS_warning7" text="* Öffne die Einstellungen von KS/VCA (Standard: STRG+C) und setze 'Shuttle Control' auf 'Aus'"/>
+		<text name="EV_KS_warning8" text="* Öffne die XML Config(*) von EnhancedVehicle, setze die Variable 'ShuttleIsEnabled' auf 'true' und lade die Config neu (Standard: KeyPad *)"/>
+		<text name="input_TSX_EnhancedVehicle_FD" text="EV: Differentialsperre Vorderachse an/aus"/>
+		<text name="input_TSX_EnhancedVehicle_RD" text="EV: Differentialsperre Hinterachse an/aus"/>
+		<text name="input_TSX_EnhancedVehicle_BD" text="EV: Beide Differentialsperren an/aus"/>
+		<text name="input_TSX_EnhancedVehicle_DM" text="EV: Antriebsmodus wechseln"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_ONOFF" text="EV: Wendeschaltung an/aus"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_SWITCH" text="EV: Fahrrichtung wechseln"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_FWD" text="EV: Fahrrichtung vorwärts"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_REV" text="EV: Fahrrichtung rückwärts"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_PARK" text="EV: Parkbremse an/aus"/>
+		<text name="input_TSX_EnhancedVehicle_AJ_REAR_UPDOWN" text="EV: Hydraulik hinten hoch/runter"/>
+		<text name="input_TSX_EnhancedVehicle_AJ_REAR_ONOFF" text="EV: Hydraulik hinten an/aus"/>
+		<text name="input_TSX_EnhancedVehicle_AJ_FRONT_UPDOWN" text="EV: Hydraulik vorne hoch/runter"/>
+		<text name="input_TSX_EnhancedVehicle_AJ_FRONT_ONOFF" text="EV: Hydraulik vorne an/aus"/>
+		<text name="input_TSX_EnhancedVehicle_RESET" text="EV: HUD zurücksetzen"/>
+		<text name="input_TSX_EnhancedVehicle_RELOAD" text="EV: XML Konfigurationsdatei neu laden"/>
+	</texts>
 </l10n>
