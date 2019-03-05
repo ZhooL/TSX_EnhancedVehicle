@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<l10n>
+	<texts>
+		<text name="EV_KS_warning1" text="Ostrzeżenie: Wykryto konflikt modów."/>
+		<text name="EV_KS_warning2" text="Rewers nie może być używany przez EnhancedVehicle i KeyboardSteer(KS)/VehicleControlAddon(VCA) w tym samym czasie."/>
+		<text name="EV_KS_warning3" text="Jeśli wolisz rewers z KS/VCA (zalecane):"/>
+		<text name="EV_KS_warning4" text="1) Otwórz menu KS/VCA (domyślnie: CTRL+C) i ustaw 'Rewers' na 'Wł.'"/>
+		<text name="EV_KS_warning5" text="2) Otwórz plik konfiguracyjny(*) od EnhancedVehicle, i dla atrybutu 'shuttleIsEnabled' ustaw wartość 'false' i wczytaj konfigurację (domyślnie: NumPad *)"/>
+		<text name="EV_KS_warning6" text="Jeśli wolisz rewers z EnhancedVehicle:"/>
+		<text name="EV_KS_warning7" text="1) Otwórz menu KS/VCA (domyślnie: CTRL+C) i ustaw 'Rewers' na  'Wył.'"/>
+		<text name="EV_KS_warning8" text="2) Otwórz plik konfiguracyjny(*) od EnhancedVehicle, i dla atrybutu 'shuttleIsEnabled' ustaw wartość 'true' i wczytaj konfigurację (domyślnie: NumPad *)"/>
+		<text name="input_TSX_EnhancedVehicle_FD" text="EV: Blokada przedniego dyferencjału"/>
+		<text name="input_TSX_EnhancedVehicle_RD" text="EV: Blokada tylnego dyferencjału"/>
+		<text name="input_TSX_EnhancedVehicle_BD" text="EV: Napęd na wszystkie koła"/>
+		<text name="input_TSX_EnhancedVehicle_DM" text="EV: Zmiana trybu jazdy kół"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_ONOFF" text="EV: Przełączanie obsługi rewersu"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_SWITCH" text="EV: Zmiana kierunku jazdy"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_FWD" text="EV: Jazda do przodu"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_REV" text="EV: Jazda do tyłu"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_PARK" text="EV: Hamulec ręczny"/>
+		<text name="input_TSX_EnhancedVehicle_AJ_REAR_UPDOWN" text="EV: Obsługa tylnego podnośnika"/>
+		<text name="input_TSX_EnhancedVehicle_AJ_REAR_ONOFF" text="EV: Obsługa narzędzi z tyłu"/>
+		<text name="input_TSX_EnhancedVehicle_AJ_FRONT_UPDOWN" text="EV: Obsługa przedniego podnośnika"/>
+		<text name="input_TSX_EnhancedVehicle_AJ_FRONT_ONOFF" text="EV: Obsługa narzędzi z przodu"/>
+		<text name="input_TSX_EnhancedVehicle_RESET" text="EV: Resetuj HUD"/>
+		<text name="input_TSX_EnhancedVehicle_RELOAD" text="EV: Wczytaj plik XML z konfiguracją"/>
+	</texts>
+</l10n>
