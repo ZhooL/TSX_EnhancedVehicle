@@ -3,11 +3,15 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 20.01.2019
--- @Version: 1.6.3.0
+-- @Date: 14.04.2019
+-- @Version: 1.6.3.1
 
 --[[
 CHANGELOG
+
+2019-04-14 - V1.6.3.1
+* fix log warning #34
+* rework of modDesc files (thanks to KITT3000)
 
 2019-01-20 - V1.6.3.0
 * updated to support the migration of KeyboardSteer to VehicleControlAddon (vca)

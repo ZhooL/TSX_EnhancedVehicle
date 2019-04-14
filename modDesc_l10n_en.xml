@@ -8,7 +8,7 @@
 		<text name="EV_KS_warning5" text="* open the XML config(*) from EnhancedVehicle, set the variable 'ShuttleIsEnabled' to 'false' and reload config (default: KeyPad *)"/>
 		<text name="EV_KS_warning6" text="If you like to use shuttle shift from EnhancedVehicle:"/>
 		<text name="EV_KS_warning7" text="* open the KS/VCA configuration (default: CTRL+C) and set 'Shuttle' to 'Off'"/>
-		<text name="EV_KS_warning5" text="* open the XML config(*) from EnhancedVehicle, set the variable 'ShuttleIsEnabled' to 'true' and reload config (default: KeyPad *)"/>
+		<text name="EV_KS_warning8" text="* open the XML config(*) from EnhancedVehicle, set the variable 'ShuttleIsEnabled' to 'true' and reload config (default: KeyPad *)"/>
 		<text name="input_TSX_EnhancedVehicle_FD" text="EV: Differential lock front axle on/off"/>
 		<text name="input_TSX_EnhancedVehicle_RD" text="EV: Differential lock rear axle on/off"/>
 		<text name="input_TSX_EnhancedVehicle_BD" text="EV: Both differential locks on/off"/>

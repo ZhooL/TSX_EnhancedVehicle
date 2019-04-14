@@ -8,7 +8,7 @@
 		<text name="EV_KS_warning5" text="* ouvrez la configuration XML(*) à partir de EnhancedVehicle, définissez la variable 'ShuttleIsEnabled' sur 'false' et rechargez la configuration (par défaut: KeyPad *)"/> <!-- Google Translator -->
 		<text name="EV_KS_warning6" text="Si vous aimez utiliser ShuttleShuttle de EnhancedVehicle:"/> <!-- Google Translator -->
 		<text name="EV_KS_warning7" text="* ouvrez la configuration de KS/VCA (par défaut: CTRL+C) et réglez 'Shuttle' sur 'Off'"/> <!-- Google Translator -->
-		<text name="EV_KS_warning5" text="* ouvrez la configuration XML (*) à partir de EnhancedVehicle, définissez la variable 'ShuttleIsEnabled' sur 'true' et rechargez la configuration (par défaut: KeyPad *)"/> <!-- Google Translator -->
+		<text name="EV_KS_warning8" text="* ouvrez la configuration XML (*) à partir de EnhancedVehicle, définissez la variable 'ShuttleIsEnabled' sur 'true' et rechargez la configuration (par défaut: KeyPad *)"/> <!-- Google Translator -->
 		<text name="input_TSX_EnhancedVehicle_FD" text="EV: Verrouillage du différentiel essieu avant on/off"/>
 		<text name="input_TSX_EnhancedVehicle_RD" text="EV: Verrouillage du différentiel essieu arrière on/off"/>
 		<text name="input_TSX_EnhancedVehicle_BD" text="EV: Deux blocages de différentiel on/off"/> <!-- Google Translator -->
