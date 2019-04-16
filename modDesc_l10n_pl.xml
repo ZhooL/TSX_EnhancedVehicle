@@ -11,8 +11,8 @@
 		<text name="EV_KS_warning8" text="2) Otwórz plik konfiguracyjny(*) od EnhancedVehicle, i dla atrybutu 'shuttleIsEnabled' ustaw wartość 'true' i wczytaj konfigurację (domyślnie: NumPad *)"/>
 		<text name="input_TSX_EnhancedVehicle_FD" text="EV: Blokada przedniego dyferencjału"/>
 		<text name="input_TSX_EnhancedVehicle_RD" text="EV: Blokada tylnego dyferencjału"/>
-		<text name="input_TSX_EnhancedVehicle_BD" text="EV: Napęd na wszystkie koła"/>
-		<text name="input_TSX_EnhancedVehicle_DM" text="EV: Zmiana trybu jazdy kół"/>
+		<text name="input_TSX_EnhancedVehicle_BD" text="EV: Blokada obu dyferencjałów"/>
+		<text name="input_TSX_EnhancedVehicle_DM" text="EV: Napęd na wszystkie koła"/>
 		<text name="input_TSX_EnhancedVehicle_SHUTTLE_ONOFF" text="EV: Przełączanie obsługi rewersu"/>
 		<text name="input_TSX_EnhancedVehicle_SHUTTLE_SWITCH" text="EV: Zmiana kierunku jazdy"/>
 		<text name="input_TSX_EnhancedVehicle_SHUTTLE_FWD" text="EV: Jazda do przodu"/>
