@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<l10n>
+	<texts>
+		<text name="EV_KS_warning1" text="Attenzione: è stato riscontrato un conflitto con altre mod."/>
+		<text name="EV_KS_warning2" text="L'inversore non può essere utilizzato contemporaneamente da EnhancedVehicle e KeyboardSteer(KS)/VehicleControlAddon(VCA)."/>
+		<text name="EV_KS_warning3" text="Se preferisci utilizzare il controllo dell'inversore da KS/VCA (raccomandato):"/>
+		<text name="EV_KS_warning4" text="* apri le impostazioni KS/VCA(tasti: CTRL+C) e imposta 'Shuttle' su 'On'"/>
+		<text name="EV_KS_warning5" text="* apri file XML di configurazione (tasto: KeyPad *) da EnhancedVehicle, imposta la variabile 'ShuttleIsEnabled' in 'false' e ricarica la configuarzione (tasto: KeyPad *)"/>
+		<text name="EV_KS_warning6" text="Se preferisci utilizzare l'inversore da EnhancedVehicle"/>
+		<text name="EV_KS_warning7" text="* apri le impostazioni di KS/VCA (tasti: CTRL+C) e imposta 'Shuttle' su 'Off'"/>
+		<text name="EV_KS_warning8" text="* apri file XML di configurazione (tasto: KeyPad *) da EnhancedVehicle, imposta la variabile 'ShuttleIsEnabled' in 'true' e ricarica la configuarzione (tasto: KeyPad *)"/>
+		<text name="input_TSX_EnhancedVehicle_FD" text="EV: Blocco differenziale anteriore attivo/disattivo"/>
+		<text name="input_TSX_EnhancedVehicle_RD" text="EV: Blocco differenziale posteriore attivo/disattivo"/>
+		<text name="input_TSX_EnhancedVehicle_BD" text="EV: Blocchi differenziali ant/post attivo/disattivo"/>
+		<text name="input_TSX_EnhancedVehicle_DM" text="EV: Cambia modalità di guida"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_ONOFF" text="EV: Inversore attivo/disattivo"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_SWITCH" text="EV: Cambia direzione di guida"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_FWD" text="EV: Direzione di guida avanti"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_REV" text="EV: Direzione di guida indietro"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_PARK" text="EV: Freno di stazionamento attivo/disattivo"/>
+		<text name="input_TSX_EnhancedVehicle_AJ_REAR_UPDOWN" text="EV: Idraulica posteriore sù/giù"/>
+		<text name="input_TSX_EnhancedVehicle_AJ_REAR_ONOFF" text="EV: Idraulica posteriore attiva/disattiva"/>
+		<text name="input_TSX_EnhancedVehicle_AJ_FRONT_UPDOWN" text="EV: Idraulica anteriore sù/giù"/>
+		<text name="input_TSX_EnhancedVehicle_AJ_FRONT_ONOFF" text="EV: Idraulica anteriore attiva/disattiva"/>
+		<text name="input_TSX_EnhancedVehicle_RESET" text="EV: reimposta HUD"/>
+		<text name="input_TSX_EnhancedVehicle_RELOAD" text="EV: ricarica file XML di configurazione"/>
+	</texts>
+</l10n>
