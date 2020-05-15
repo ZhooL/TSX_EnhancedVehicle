@@ -3,7 +3,7 @@ This is a Mod for Farming Simulator 19. It adds shuttle shift, differential lock
 
 **NOTE: The only source of truth is: https://github.com/ZhooL/TSX_EnhancedVehicle. The second valid download location is: https://www.modhoster.de/mods/enhancedvehicle. All other download locations are not validated by me - so handle with care.**
 
-*(c) 2018-2020 by ZhooL. Be so kind to credit me when using this mod or the source code (or parts of it) somewhere.*
+*(c) 2018-2020 by ZhooL. Be so kind to credit me when using this mod or the source code (or parts of it) somewhere.*  
 License: https://creativecommons.org/licenses/by-nc-sa/4.0/
 
 ## Default Keybindings
@@ -44,6 +44,6 @@ License: https://creativecommons.org/licenses/by-nc-sa/4.0/
 * Multi-language support (right now it's a mix of German and English)
 
 # The rest
-**Make Strohablage great again!**
-https://zhool.de
+**Make Strohablage great again!**  
+https://zhool.de  
 https://github.com/ZhooL/TSX_EnhancedVehicle
