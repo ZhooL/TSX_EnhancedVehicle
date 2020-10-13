@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="40">
   <author>ZhooL</author>
-  <contributors>Continuum, Toryius, boloss, KITT3000, zed636</contributors>
+  <contributors>Continuum, Toryius, boloss, KITT3000, zed636, el_trueno</contributors>
 
   <version>1.6.4.0</version>
 
@@ -17,6 +17,7 @@
     <en><![CDATA[Differential locks and wheel drive modes for your vehicle. Shows more vehicle details on HUD.]]></en>
     <fr><![CDATA[Blocages de différentiel et modes de traction des roues pour votre véhicule. Affiche plus de détails sur les véhicules sur le HUD.]]></fr>
     <it><![CDATA[Blocchi ai differenziali e modalità di guida per il tuo veicolo. Maggiori dettagli sul veicolo nell'HUD.]]></it>
+    <es><![CDATA[Bloqueo de diferenciales y modos de tracción para tus vehículos. Muestra más detalles del vehículo en el HUD.]]></es>
   </description>
 
   <iconFilename>TSX_EnhancedVehicle.dds</iconFilename>
