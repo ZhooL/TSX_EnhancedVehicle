@@ -13,7 +13,7 @@
 		<text name="input_TSX_EnhancedVehicle_RD" text="EV: Bloqueo diferencial trasero on/off"/>
 		<text name="input_TSX_EnhancedVehicle_BD" text="EV: Bloqueo ambos diferenciales on/off"/>
 		<text name="input_TSX_EnhancedVehicle_DM" text="EV: Cambiar modo tracción"/>
-		<text name="input_TSX_EnhancedVehicle_SHUTTLE_ONOFF" text="EV: Turn driving direction changerCa on/off"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_ONOFF" text="EV: Activar cambiar de dirección on/off"/>
 		<text name="input_TSX_EnhancedVehicle_SHUTTLE_SWITCH" text="EV: Cambiar dirección de conducción"/>
 		<text name="input_TSX_EnhancedVehicle_SHUTTLE_FWD" text="EV: conducción marcha alante"/>
 		<text name="input_TSX_EnhancedVehicle_SHUTTLE_REV" text="EV: conducción marcha atras"/>
