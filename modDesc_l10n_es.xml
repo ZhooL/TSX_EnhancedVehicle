@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<l10n>
+	<texts>
+		<text name="EV_KS_warning1" text="Atención: detectado conflicto con mod."/>
+		<text name="EV_KS_warning2" text="ShuttleShift no puede ser usado en EnhancedVehicle y KeyboardSteer(KS)/VehicleControlAddon(VCA) a la vez."/>
+		<text name="EV_KS_warning3" text="Si quieres usar ShuttleShift de KS/VCA (recomendado):"/>
+		<text name="EV_KS_warning4" text="* abre la configuración de KS/VCA (por defecto: CTRL+C) y establece 'Shuttle' a 'On'"/>
+		<text name="EV_KS_warning5" text="* abre la configuración XML(*) de EnhancedVehicle, establece la variable 'ShuttleIsEnabled' a 'false' y recarga la configuración (por defecto: KeyPad *)"/>
+		<text name="EV_KS_warning6" text="Si quieres usar ShuttleShift de EnhancedVehicle:"/>
+		<text name="EV_KS_warning7" text="* abre la configuración de KS/VCA (por defecto: CTRL+C) y establece 'Shuttle' a 'Off'"/>
+		<text name="EV_KS_warning8" text="* abre la configuración XML(*) de EnhancedVehicle, establece la variable 'ShuttleIsEnabled' a 'true' y recarga la configuración (por defecto: KeyPad *)"/>
+		<text name="input_TSX_EnhancedVehicle_FD" text="EV: Bloqueo diferencial delantero on/off"/>
+		<text name="input_TSX_EnhancedVehicle_RD" text="EV: Bloqueo diferencial trasero on/off"/>
+		<text name="input_TSX_EnhancedVehicle_BD" text="EV: Bloqueo ambos diferenciales on/off"/>
+		<text name="input_TSX_EnhancedVehicle_DM" text="EV: Cambiar modo tracción"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_ONOFF" text="EV: Turn driving direction changerCa on/off"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_SWITCH" text="EV: Cambiar dirección de conducción"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_FWD" text="EV: conducción marcha alante"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_REV" text="EV: conducción marcha atras"/>
+		<text name="input_TSX_EnhancedVehicle_SHUTTLE_PARK" text="EV: freno de estacionamiento on/off"/>
+		<text name="input_TSX_EnhancedVehicle_AJ_REAR_UPDOWN" text="EV: hidráulico trasero up/down"/>
+		<text name="input_TSX_EnhancedVehicle_AJ_REAR_ONOFF" text="EV: hidráulico trasero on/off"/>
+		<text name="input_TSX_EnhancedVehicle_AJ_FRONT_UPDOWN" text="EV: hidráulico delantero up/down"/>
+		<text name="input_TSX_EnhancedVehicle_AJ_FRONT_ONOFF" text="EV: hidráulico delantero on/off"/>
+		<text name="input_TSX_EnhancedVehicle_RESET" text="EV: resetear HUD"/>
+		<text name="input_TSX_EnhancedVehicle_RELOAD" text="EV: recargar archivo XML de configuración"/>
+	</texts>
+</l10n>
