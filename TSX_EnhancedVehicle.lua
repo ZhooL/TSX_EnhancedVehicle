@@ -3,11 +3,14 @@
 --
 -- Author: ZhooL
 -- email: ls19@dark-world.de
--- @Date: 17.04.2019
--- @Version: 1.6.4.0
+-- @Date: 19.10.2020
+-- @Version: 1.6.4.1
 
 --[[
 CHANGELOG
+
+2020-10-19 - V1.6.4.1
++ added spanish translation (thanks to eltrueno) #51
 
 2019-04-17 - V1.6.4.0
 + added italian translation (thanks to zed636) #42
